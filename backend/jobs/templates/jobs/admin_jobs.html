@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobs — Bamenda Connect Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #F0F2F5; color: #1A1A1A; }
+  .sidebar { width: 240px; background: linear-gradient(180deg, #001F5B, #003399); min-height: 100vh; position: fixed; top: 0; left: 0; padding: 2rem 1.25rem; }
+  .sidebar .brand { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.3rem; margin-bottom: 2rem; }
+  .sidebar .brand span { color: #C5A059; }
+  .sidebar a { display: flex; align-items: center; gap: 0.75rem; color: rgba(255,255,255,0.75); text-decoration: none; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 0.3rem; transition: all 0.2s; }
+  .sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .main { margin-left: 240px; padding: 2rem; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+  .topbar h1 { font-size: 1.5rem; font-weight: 600; }
+  .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { text-align: left; padding: 0.6rem 0.75rem; background: #F8F9FA; color: #555; font-weight: 500; border-bottom: 1px solid #eee; }
+  td { padding: 0.7rem 0.75rem; border-bottom: 1px solid #f0f0f0; }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+  .badge.yes { background: #E8F5E9; color: #2E7D32; }
+  .badge.no { background: #F5F5F5; color: #777; }
+  .btn-sm { padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
+  .btn-danger { background: #FFEBEE; color: #C62828; }
+  .btn-danger:hover { background: #C62828; color: #fff; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="brand">Bamenda<span>Connect</span></div>
+  <a href="/dashboard/"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+  <a href="/dashboard/users/"><i class="fa-solid fa-users"></i> Users</a>
+  <a href="/dashboard/jobs/" class="active"><i class="fa-solid fa-briefcase"></i> Jobs</a>
+  <a href="/dashboard/applications/"><i class="fa-solid fa-file-lines"></i> Applications</a>
+  <a href="/"><i class="fa-solid fa-globe"></i> View Site</a>
+  <a href="/dashboard/logout/" style="color:#ffb3b3;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+</div>
+<div class="main">
+  <div class="topbar">
+    <h1><i class="fa-solid fa-briefcase" style="color:#003399; margin-right:0.5rem;"></i> All Jobs ({{ jobs.count }})</h1>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>#</th><th>Title</th><th>Company</th><th>Category</th><th>Type</th><th>Location</th><th>Featured</th><th>Applications</th><th>Posted</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ job.title }}</strong></td>
+          <td>{{ job.company }}</td>
+          <td>{{ job.category }}</td>
+          <td>{{ job.job_type }}</td>
+          <td>{{ job.location }}</td>
+          <td><span class="badge {% if job.is_featured %}yes{% else %}no{% endif %}">{% if job.is_featured %}Yes{% else %}No{% endif %}</span></td>
+          <td>{{ job.applications.count }}</td>
+          <td>{{ job.created_at|date:"d M Y" }}</td>
+          <td>
+            <a href="/dashboard/jobs/delete/{{ job.id }}/" class="btn-sm btn-danger" onclick="return confirm('Delete this job?')">
+              <i class="fa-solid fa-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10" style="text-align:center; color:#aaa; padding:2rem;">No jobs posted yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bamenda Connect — Local Jobs in Bamenda</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'jobs/style.css' %}?v=33">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  body.high-contrast { background: #001642 !important; color: #f5f9ff !important; }
+  body.high-contrast .page { background: #001642 !important; }
+  body.high-contrast .form-card, body.high-contrast .job-card, body.high-contrast .category-card, body.high-contrast .price-card { background: #04245f !important; border-color: #0c4fbc !important; color: #eaf2ff !important; }
+  body.high-contrast .btn-primary { background: #4d82ff !important; }
+  body.high-contrast .btn-outline { border-color: #aac8ff !important; color: #eaf2ff !important; }
+  body.high-contrast .hero { background: linear-gradient(135deg, #03175e 0%, #1a3f9d 60%, #2e65c3 100%) !important; }
+  body.high-contrast .nav-links a { color: #d7e6ff !important; }
+  body.high-contrast .hero p { color: #c5dbff !important; }
+  body.high-contrast .form-group input, body.high-contrast .form-group select, body.high-contrast .form-group textarea { background: #0b2a6c !important; color: #eff3ff !important; border-color: #4d82ff !important; }
+</style>
+</head>
+<body>
+
+<!-- LOADING SPINNER -->
+<div id="loadingSpinner" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:1rem;">
+  <div style="width:48px;height:48px;border:4px solid #E8EEFF;border-top:4px solid #003399;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <p style="color:#003399;font-weight:600;font-size:0.9rem;" data-i18n="loading">Loading...</p>
+</div>
+
+<!-- BACK TO TOP -->
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="display:none;position:fixed;bottom:2rem;right:1.5rem;background:#003399;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.1rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,51,153,0.3);z-index:100;transition:all 0.2s;"><i class="fa-solid fa-arrow-up"></i></button>
+
+<!-- COOKIE CONSENT -->
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1A1A1A;color:#E0E0E0;padding:1rem 2rem;z-index:500;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+  <p style="font-size:0.85rem;margin:0;" data-i18n="cookie_banner_text"><i class="fa-solid fa-cookie-bite" style="color:#C5A059;margin-right:0.5rem;"></i>We use cookies to improve your experience. By using Bamenda Connect, you agree to our <a href="#" onclick="showPage('terms')" style="color:#C5A059;">Terms & Conditions</a>.</p>
+  <div style="display:flex;gap:0.75rem;">
+    <button onclick="acceptCookies()" class="btn btn-primary" style="padding:0.4rem 1.2rem;font-size:0.85rem;" data-i18n="accept_cookies">Accept</button>
+    <button onclick="document.getElementById('cookieBanner').style.display='none'" style="background:none;border:1px solid #555;color:#E0E0E0;padding:0.4rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;" data-i18n="decline_cookies">Decline</button>
+  </div>
+</div>
+
+<!-- WELCOME MARQUEE -->
+<div id="welcomeMarquee" style="display:none; background:#001F5B; color:#E0E0E0; padding:0.4rem 0; font-size:0.88rem; font-weight:500; overflow:hidden;">
+  <div id="welcomeText" class="marquee-inner"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo" onclick="showPage('home')" style="cursor:pointer;">Bamenda<span>Connect</span></div>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('jobs')" class="hide-mobile" id="nav-jobs" data-i18n="nav_jobs">Browse Jobs</a>
+    <a href="#" onclick="showPage('postjob')" class="hide-mobile" id="nav-postjob" data-i18n="nav_postjob">Post a Job</a>
+    <a href="#" onclick="showPage('pricing')" class="hide-mobile" id="nav-pricing" data-i18n="nav_pricing">Pricing</a>
+    <button id="contrastToggleBtn" class="btn btn-outline hide-mobile" style="font-size:0.8rem;" onclick="toggleContrastMode()">Dark mode</button>
+    <button id="langToggleBtn" class="btn btn-outline hide-mobile" style="font-size:0.8rem;" onclick="toggleLanguage()">FR</button>
+    <a href="#" id="nav-employer-dashboard" onclick="loadEmployerDashboard()" class="hide-mobile btn btn-outline" style="font-size:0.8rem; display:none; color:#fff; border-color:rgba(255,255,255,0.25);"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="#" id="nav-my-applications" onclick="loadMyApplications()" class="hide-mobile btn btn-outline" style="font-size:0.8rem; display:none; color:#fff; border-color:rgba(255,255,255,0.25);"><i class="fa-solid fa-briefcase"></i> My Applications</a>
+    <a href="#" id="nav-saved" onclick="loadSavedJobs()" class="hide-mobile btn btn-outline" style="font-size:0.8rem; display:none; color:#fff; border-color:rgba(255,255,255,0.25);"><i class="fa-solid fa-bookmark"></i> Saved</a>
+    <a href="#" id="nav-messages" onclick="loadMessages()" class="hide-mobile" style="display:none;flex-direction:column;align-items:center;gap:2px;padding:0.25rem 0.5rem;text-decoration:none;cursor:pointer;border-radius:8px;transition:background 0.2s;position:relative;" onmouseover="this.style.background='rgba(197,160,89,0.15)'" onmouseout="this.style.background='transparent'">
+      <div style="position:relative;">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#003399,#0a4db3);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,51,153,0.4);position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;background:conic-gradient(rgba(197,160,89,0.45) 0deg,transparent 60deg,rgba(197,160,89,0.2) 180deg,transparent 240deg);animation:bcSpin 3s linear infinite;"></div>
+          <span style="position:relative;z-index:1;font-family:'Playfair Display',serif;font-size:0.7rem;font-weight:900;color:#fff;letter-spacing:-0.5px;display:flex;align-items:center;gap:1px;">
+            <span>B</span><span style="color:#C5A059;">C</span>
+          </span>
+        </div>
+        <span id="msgBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#C5A059;color:#fff;border-radius:50%;width:15px;height:15px;font-size:0.58rem;font-weight:800;align-items:center;justify-content:center;border:2px solid #0a1d47;z-index:10;animation:badgePulse 1.5s ease-in-out infinite;">0</span>
+      </div>
+      <span style="font-size:0.58rem;font-weight:700;color:#C5A059;letter-spacing:0.4px;text-transform:uppercase;">Message</span>
+    </a>
+    <div id="userNav" class="user-nav" style="display:none; position:relative;">
+      <img id="navAvatar" src="https://www.gravatar.com/avatar/?d=mp&s=40" alt="Profile"
+        onclick="showPage('profile')"
+        style="width:38px;height:38px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid var(--accent);">
+      <button id="notifBtn" onclick="toggleNotifications()" style="position:relative;background:none;border:none;cursor:pointer;color:#fff;font-size:1.1rem;padding:0.3rem;">
+        <i class="fa-solid fa-bell"></i>
+        <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#C62828;color:#fff;border-radius:50%;width:16px;height:16px;font-size:0.65rem;display:flex;align-items:center;justify-content:center;">0</span>
+      </button>
+      <div id="notifDropdown" style="display:none;position:absolute;top:50px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.15);width:320px;max-height:400px;overflow-y:auto;z-index:200;">
+        <div style="padding:1rem;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+          <strong style="font-size:0.9rem;">Notifications</strong>
+          <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.78rem;cursor:pointer;">Mark all read</button>
+        </div>
+        <div id="notifList" style="padding:0.5rem;"></div>
+      </div>
+    </div>
+    <a href="#" onclick="showPage('login')" id="loginNavBtn" class="btn btn-outline hide-mobile" style="color:#fff; border-color:rgba(255,255,255,0.25);" data-i18n="nav_login">Log In</a>
+    <a href="#" onclick="showPage('register')" id="signupNavBtn" class="btn btn-primary hide-mobile" data-i18n="nav_signup">Sign Up</a>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div id="mobileMenu" class="mobile-menu">
+  <a href="#" onclick="showPage('jobs'); closeMobileMenu()" id="mob-jobs" data-i18n="nav_jobs">Browse Jobs</a>
+  <a href="#" onclick="showPage('postjob'); closeMobileMenu()" id="mob-postjob" data-i18n="nav_postjob">Post a Job</a>
+  <a href="#" onclick="showPage('pricing'); closeMobileMenu()" id="mob-pricing" data-i18n="nav_pricing">Pricing</a>
+  <a href="#" onclick="loadEmployerDashboard(); closeMobileMenu()" id="mob-employer-dashboard" style="display:none;"><i class="fa-solid fa-gauge"></i> My Dashboard</a>
+  <a href="#" onclick="loadMyApplications(); closeMobileMenu()" id="mob-my-applications" style="display:none;"><i class="fa-solid fa-briefcase"></i> My Applications</a>
+  <a href="#" onclick="loadSavedJobs(); closeMobileMenu()" id="mob-saved" style="display:none;"><i class="fa-solid fa-bookmark"></i> Saved Jobs</a>
+  <a href="#" onclick="loadMessages(); closeMobileMenu()" id="mob-messages" style="display:none;"><i class="fa-solid fa-comments"></i> Messages</a>
+  <a href="#" onclick="showPage('profile'); closeMobileMenu()" id="mob-profile" style="display:none;"><i class="fa-solid fa-user"></i> My Profile</a>
+  <a href="#" onclick="showPage('login'); closeMobileMenu()" id="mob-login" data-i18n="nav_login">Log In</a>
+  <a href="#" onclick="showPage('register'); closeMobileMenu()" id="mob-signup" data-i18n="nav_signup">Sign Up</a>
+  <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="toggleContrastMode(); closeMobileMenu()" id="mobContrastBtn">Dark mode</button>
+  <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="toggleLanguage()" id="mobLangBtn">FR</button>
+</div>
+
+<!-- ===================== HOME PAGE ===================== -->
+<div class="page active" id="page-home">
+
+  <div class="hero">
+    <video autoplay muted loop playsinline class="hero-video">
+      <source src="{% static 'jobs/together.mp4' %}" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
+    <h1 data-i18n="hero_title">Find Your Next Job<br>in <span>Bamenda</span></h1>
+    <p data-i18n="hero_sub">Connecting local talent with local employers. Your career starts right here in your community.</p>
+    <div class="search-bar">
+      <span style="padding: 0.5rem 0.5rem 0.5rem 0.75rem; color:#9bb5a4; font-size:1rem;"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" data-i18n-placeholder="search_placeholder" placeholder="Search jobs, companies, skills…" id="homeSearch">
+      <select id="heroLocFilter" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#555;padding:0.5rem 0.4rem;background:#fff;border-radius:8px;min-width:110px;">
+        <option value="">All Areas</option>
+        <option>Mile 4</option>
+        <option>Mile 2</option>
+        <option>Mile 1</option>
+        <option>Commercial Avenue</option>
+        <option>Up Station</option>
+        <option>Nkwen</option>
+        <option>Ntarikon</option>
+        <option>Cow Street</option>
+        <option>Food Market</option>
+        <option>Bamenda Town</option>
+        <option>Bambili</option>
+        <option>Bambui</option>
+        <option>Mankon</option>
+        <option>Bafut</option>
+        <option>Ndop</option>
+        <option>Wum</option>
+        <option>Tubah</option>
+        <option>Akum</option>
+        <option>Pinyin</option>
+        <option>Bali</option>
+      </select>
+      <button class="btn btn-primary" onclick="doSearch()" data-i18n="search_btn">Search Jobs</button>
+    </div>
+  </div>
+
+
+  <div class="section">
+    <h2 class="section-title" data-i18n="cat_title">Browse by Category</h2>
+    <p class="section-sub" data-i18n="cat_sub">Popular job categories across Bamenda</p>
+    <div class="categories">
+      <div class="category-card" onclick="filterCat('Agriculture')">
+        <img src="{% static 'jobs/agriculture.jpg' %}" class="cat-img" alt="Agriculture">
+        <div class="cat-name" data-i18n="cat_agriculture">Agriculture</div><div class="cat-count" id="cat-count-Agriculture"></div>
+      </div>
+      <div class="category-card" onclick="filterCat('Education')">
+        <img src="{% static 'jobs/education.jpg' %}" class="cat-img" alt="Education">
+        <div class="cat-name" data-i18n="cat_education">Education</div><div class="cat-count" id="cat-count-Education"></div>
+      </div>
+      <div class="category-card" onclick="filterCat('Health')">
+        <img src="{% static 'jobs/health.jpg' %}" class="cat-img" alt="Health">
+        <div class="cat-name" data-i18n="cat_health">Health</div><div class="cat-count" id="cat-count-Health"></div>
+      </div>
+      <div class="category-card" onclick="filterCat('Construction')">
+        <img src="{% static 'jobs/construction.jpg' %}" class="cat-img" alt="Construction">
+        <div class="cat-name" data-i18n="cat_construction">Construction</div><div class="cat-count" id="cat-count-Construction"></div>
+      </div>
+      <div class="category-card" onclick="filterCat('Trade')">
+        <img src="{% static 'jobs/Trade.jpg' %}" class="cat-img" alt="Trade">
+        <div class="cat-name" data-i18n="cat_trade">Trade &amp; Retail</div><div class="cat-count" id="cat-count-Trade"></div>
+      </div>
+      <div class="category-card" onclick="filterCat('Technology')">
+        <img src="{% static 'jobs/technology.jpg' %}" class="cat-img" alt="Technology">
+        <div class="cat-name" data-i18n="cat_technology">Technology</div><div class="cat-count" id="cat-count-Technology"></div>
+      </div>
+      <div class="category-card" onclick="filterCat('Other')">
+        <img src="{% static 'jobs/other.jpg' %}" class="cat-img" alt="Other">
+        <div class="cat-name">Other</div><div class="cat-count" id="cat-count-Other"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- FEATURED JOBS SECTION -->
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h2 class="section-title" data-i18n="feat_title">Featured Jobs</h2>
+        <p class="section-sub" style="margin-bottom:0;" data-i18n="feat_sub">Latest opportunities across Bamenda</p>
+      </div>
+      <button class="btn btn-outline" style="color:var(--primary);border-color:var(--primary);" onclick="showPage('jobs')" data-i18n="view_all">View All Jobs &rarr;</button>
+    </div>
+    <div class="jobs-grid" id="featuredJobsGrid" style="margin-top:1.5rem;"></div>
+  </div>
+
+
+  <!-- SITE RATING SECTION -->
+  <div class="section" style="text-align:center;">
+    <h2 class="section-title" data-i18n="section_rating_title">What Do You Think of Bamenda Connect?</h2>
+    <p class="section-sub" data-i18n="section_rating_sub">Your feedback helps us improve. Rate your experience with us.</p>
+
+    <!-- Rating summary -->
+    <div id="ratingSummary" style="display:none; background:#fff; border-radius:16px; padding:1.5rem; max-width:600px; margin:0 auto 1.5rem; box-shadow:0 4px 24px rgba(0,51,153,0.08);">
+      <div style="display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div id="avgScore" style="font-family:'Playfair Display',serif; font-size:3.5rem; font-weight:700; color:#003399; line-height:1;">0</div>
+          <div id="avgStars" style="color:#C5A059; font-size:1.2rem; margin:0.3rem 0;"></div>
+          <div id="totalRatings" style="font-size:0.82rem; color:var(--muted);"></div>
+        </div>
+        <div id="ratingBars" style="flex:1; min-width:180px;"></div>
+      </div>
+    </div>
+
+    <!-- Submit rating -->
+    <div style="background:#fff; border-radius:16px; padding:2rem; max-width:600px; margin:0 auto 1.5rem; box-shadow:0 4px 24px rgba(0,51,153,0.08);">
+      <div id="siteRatingStars" style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
+        <i class="fa-regular fa-star" data-rating="1" onclick="setSiteRating(1)" style="font-size:2.5rem; cursor:pointer; color:#C5A059; transition:transform 0.2s;" onmouseover="hoverSiteRating(1)" onmouseout="resetSiteRatingHover()"></i>
+        <i class="fa-regular fa-star" data-rating="2" onclick="setSiteRating(2)" style="font-size:2.5rem; cursor:pointer; color:#C5A059; transition:transform 0.2s;" onmouseover="hoverSiteRating(2)" onmouseout="resetSiteRatingHover()"></i>
+        <i class="fa-regular fa-star" data-rating="3" onclick="setSiteRating(3)" style="font-size:2.5rem; cursor:pointer; color:#C5A059; transition:transform 0.2s;" onmouseover="hoverSiteRating(3)" onmouseout="resetSiteRatingHover()"></i>
+        <i class="fa-regular fa-star" data-rating="4" onclick="setSiteRating(4)" style="font-size:2.5rem; cursor:pointer; color:#C5A059; transition:transform 0.2s;" onmouseover="hoverSiteRating(4)" onmouseout="resetSiteRatingHover()"></i>
+        <i class="fa-regular fa-star" data-rating="5" onclick="setSiteRating(5)" style="font-size:2.5rem; cursor:pointer; color:#C5A059; transition:transform 0.2s;" onmouseover="hoverSiteRating(5)" onmouseout="resetSiteRatingHover()"></i>
+      </div>
+      <p id="siteRatingLabel" style="font-size:0.9rem; color:var(--muted); margin-bottom:1rem;">Click a star to rate</p>
+      <div id="siteRatingFeedback" style="display:none;">
+        <textarea id="siteRatingComment" placeholder="Share your experience with Bamenda Connect (optional)..." style="width:100%; padding:0.75rem; border:1.5px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.9rem; resize:vertical; min-height:80px; outline:none; margin-bottom:1rem;"></textarea>
+        <button class="btn btn-primary" style="width:100%; justify-content:center; padding:0.8rem;" onclick="submitSiteRating()"><i class="fa-solid fa-paper-plane"></i> Submit Rating</button>
+      </div>
+      <div id="siteRatingThanks" style="display:none; text-align:center; padding:0.5rem 0;">
+        <div style="font-size:2rem; color:var(--primary); margin-bottom:0.5rem;"><i class="fa-solid fa-circle-check"></i></div>
+        <p style="font-size:0.9rem; color:var(--muted);">Thank you for rating Bamenda Connect!</p>
+      </div>
+    </div>
+
+    <!-- Community ratings -->
+    <div id="communityRatings" style="max-width:600px; margin:0 auto;"></div>
+  </div>
+
+  <!-- SUCCESS STORIES -->
+  <div class="section" style="text-align:center;">
+    <h2 class="section-title" data-i18n="stories_title">Success Stories</h2>
+    <p class="section-sub" data-i18n="stories_sub">Real people who found jobs through Bamenda Connect</p>
+
+    <!-- Stories list -->
+    <div id="storiesList" style="max-width:700px;margin:0 auto 2rem;"></div>
+
+    <!-- Submit story -->
+    <div id="storyFormBox" style="max-width:700px;margin:0 auto;background:#fff;border-radius:16px;padding:2rem;box-shadow:0 4px 24px rgba(0,51,153,0.08);text-align:left;">
+      <div id="storyLoggedOut" style="text-align:center;padding:1rem 0;">
+        <div style="font-size:2.5rem;color:var(--primary);margin-bottom:0.75rem;"><i class="fa-solid fa-star"></i></div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:0.5rem;color:var(--dark);">Did you find a job through Bamenda Connect?</h3>
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1.25rem;">Log in and share your success story to inspire others in the community.</p>
+        <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="showPage('login')"><i class="fa-solid fa-right-to-bracket"></i> Log In to Share</button>
+          <button class="btn btn-outline" style="color:var(--primary);border-color:var(--primary);" onclick="showPage('register')"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+        </div>
+      </div>
+      <div id="storyLoggedIn" style="display:none;">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:1.25rem;color:var(--dark);"><i class="fa-solid fa-pen-to-square" style="color:var(--primary);"></i> Share Your Success Story</h3>
+        <div class="alert" id="storyAlert"></div>
+        <div class="form-group">
+          <label>Job Title You Got *</label>
+          <input type="text" id="storyJobTitle" placeholder="e.g. Primary School Teacher">
+        </div>
+        <div class="form-group">
+          <label>Company / Employer</label>
+          <input type="text" id="storyCompany" placeholder="e.g. Bamenda Regional Hospital">
+        </div>
+        <div class="form-group">
+          <label>Your Story *</label>
+          <textarea id="storyText" placeholder="Tell us how Bamenda Connect helped you find this job..." style="min-height:100px;"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.8rem;" onclick="submitStory()">
+          <i class="fa-solid fa-paper-plane"></i> Submit My Story
+        </button>
+      </div>
+      <div id="storyThanks" style="display:none;text-align:center;padding:1rem 0;">
+        <div style="font-size:2.5rem;color:var(--primary);margin-bottom:0.75rem;"><i class="fa-solid fa-circle-check"></i></div>
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:0.5rem;">Thank you for sharing!</h3>
+        <p style="font-size:0.88rem;color:var(--muted);">Your story will inspire others in the Bamenda community.</p>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="section" style="text-align:center;">
+    <h2 class="section-title" data-i18n="how_title">How Bamenda Connect Works</h2>
+    <p class="section-sub" data-i18n="how_sub">Simple steps to find or post a job</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:1.5rem;">
+      <div class="how-step">
+        <div class="how-step-num">01</div>
+        <div class="how-step-icon"><i class="fa-solid fa-user-pen"></i></div>
+        <h3 data-i18n="step1_title">Create Account</h3>
+        <p data-i18n="step1_desc">Register as a job seeker or employer in minutes. Free to join.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">02</div>
+        <div class="how-step-icon"><i class="fa-solid fa-briefcase"></i></div>
+        <h3 data-i18n="step2_title">Find or Post Jobs</h3>
+        <p data-i18n="step2_desc">Browse local jobs or post your vacancy to reach Bamenda talent.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">03</div>
+        <div class="how-step-icon"><i class="fa-solid fa-handshake"></i></div>
+        <h3 data-i18n="step3_title">Apply &amp; Connect</h3>
+        <p data-i18n="step3_desc">Apply directly and connect with employers in your community.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">04</div>
+        <div class="how-step-icon"><i class="fa-solid fa-trophy"></i></div>
+        <h3 data-i18n="step4_title">Get Hired!</h3>
+        <p data-i18n="step4_desc">Start your new job in Bamenda. Simple as that.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== JOBS PAGE ===================== -->
+<div class="page" id="page-jobs">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem;" data-i18n="jobs_title">Browse All Jobs</h1>
+      <p style="color:#c8d5f5; margin-bottom:1.25rem;" data-i18n="jobs_sub">Opportunities across Bamenda Metropolitan Area</p>
+      <div class="search-bar" style="max-width:550px; margin:0 auto;">
+        <span style="padding:0.5rem 0.5rem 0.5rem 0.75rem; color:#9bb5a4;"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" placeholder="Job title, skill, company…" id="jobSearch" oninput="filterJobs()" autocomplete="off">
+        <div id="searchSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);z-index:50;max-height:200px;overflow-y:auto;"></div>
+        <select id="catFilter" onchange="filterJobs()" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);padding:0.5rem;background:#fff;border-radius:8px;">
+          <option value="">All Categories</option>
+          <option>Agriculture</option>
+          <option>Education</option>
+          <option>Health</option>
+          <option>Construction</option>
+          <option>Trade</option>
+          <option>Technology</option>
+        </select>
+        <select id="locFilter" onchange="filterJobs()" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);padding:0.5rem;background:#fff;border-radius:8px;">
+          <option value="">All Areas</option>
+          <option>Mile 4</option>
+          <option>Mile 2</option>
+          <option>Mile 1</option>
+          <option>Commercial Avenue</option>
+          <option>Up Station</option>
+          <option>Nkwen</option>
+          <option>Ntarikon</option>
+          <option>Cow Street</option>
+          <option>Food Market</option>
+          <option>Bamenda Town</option>
+          <option>Bambili</option>
+          <option>Bambui</option>
+          <option>Mankon</option>
+          <option>Bafut</option>
+          <option>Ndop</option>
+          <option>Wum</option>
+          <option>Tubah</option>
+          <option>Akum</option>
+          <option>Pinyin</option>
+          <option>Bali</option>
+        </select>
+        <select id="typeFilter" onchange="filterJobs()" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);padding:0.5rem;background:#fff;border-radius:8px;">
+          <option value="">All Types</option>
+          <option>Full-time</option>
+          <option>Part-time</option>
+          <option>Contract</option>
+          <option>Seasonal</option>
+          <option>Volunteer</option>
+        </select>
+      </div>
+      <div class="filter-chips">
+        <div class="chip-group">
+          <span class="chip-label">Category:</span>
+          <button class="chip active" data-filter="cat" data-value="">All</button>
+          <button class="chip" data-filter="cat" data-value="Agriculture">Agriculture</button>
+          <button class="chip" data-filter="cat" data-value="Education">Education</button>
+          <button class="chip" data-filter="cat" data-value="Health">Health</button>
+          <button class="chip" data-filter="cat" data-value="Technology">Technology</button>
+        </div>
+        <div class="chip-group">
+          <span class="chip-label">Location:</span>
+          <button class="chip active" data-filter="loc" data-value="">All</button>
+          <button class="chip" data-filter="loc" data-value="Mile 4">Mile 4</button>
+          <button class="chip" data-filter="loc" data-value="Mile 2">Mile 2</button>
+          <button class="chip" data-filter="loc" data-value="Commercial Avenue">Commercial</button>
+          <button class="chip" data-filter="loc" data-value="Bamenda Town">Town</button>
+        </div>
+        <div class="chip-group">
+          <span class="chip-label">Type:</span>
+          <button class="chip active" data-filter="type" data-value="">All</button>
+          <button class="chip" data-filter="type" data-value="Full-time">Full-time</button>
+          <button class="chip" data-filter="type" data-value="Part-time">Part-time</button>
+          <button class="chip" data-filter="type" data-value="Contract">Contract</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div id="jobCount" class="job-count-label"></div>
+    <div id="recentlyViewedSection" style="display:none;margin-bottom:1.5rem;">
+      <h3 style="font-size:0.95rem;font-weight:600;color:var(--muted);margin-bottom:0.75rem;"><i class="fa-solid fa-clock-rotate-left"></i> Recently Viewed</h3>
+      <div class="jobs-grid" id="recentlyViewedGrid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));"></div>
+      <hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--border);">
+    </div>
+    <div class="jobs-grid" id="allJobsGrid"></div>
+  </div>
+</div>
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div class="page" id="page-login">
+  <div class="form-page">
+    <div class="form-card">
+      <h2 class="form-title" data-i18n="login_title">Welcome back</h2>
+      <p class="form-sub" data-i18n="login_sub">Log in to your Bamenda Connect account</p>
+      <div class="alert" id="loginAlert"></div>
+      <div class="form-group">
+        <label data-i18n="reg_email">Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label data-i18n="reg_pass">Password</label>
+        <div style="position:relative; display:flex; align-items:center;">
+          <input type="password" id="loginPass" placeholder="Enter your password" style="width:100%; padding-right:2.75rem;">
+          <button type="button"
+            onmousedown="document.getElementById('loginPass').type='text'; this.querySelector('i').className='fa-regular fa-eye-slash'; this.style.color='var(--primary)';"
+            onmouseup="document.getElementById('loginPass').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            onmouseleave="document.getElementById('loginPass').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            ontouchstart="document.getElementById('loginPass').type='text'; this.querySelector('i').className='fa-regular fa-eye-slash'; this.style.color='var(--primary)';"
+            ontouchend="document.getElementById('loginPass').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0;line-height:1;">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%; padding:0.8rem; font-size:1rem; justify-content:center; margin-top:0.5rem;" onclick="doLogin()" data-i18n="login_btn">Log In to Bamenda Connect</button>
+      <div style="display:flex; align-items:center; gap:0.75rem; margin:1rem 0;">
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+        <span style="font-size:0.8rem; color:var(--muted);">or</span>
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+      </div>
+      <button class="btn" style="width:100%; padding:0.8rem; font-size:0.95rem; justify-content:center; background:#fff; color:#444; border:1.5px solid var(--border); gap:0.6rem;" onclick="signInWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px;"> Continue with Google
+      </button>
+      <div class="form-bottom" style="margin-top:1.25rem;"><span data-i18n="login_no_acc">Don't have an account?</span> <a href="#" class="form-link" onclick="showPage('register')" data-i18n="login_signup">Sign up free</a></div>
+      <div class="form-bottom" style="margin-top:0.5rem;"><a href="#" class="form-link" style="color:var(--muted); font-weight:400;" onclick="document.getElementById('forgotModal').classList.add('open')" data-i18n="login_forgot">Forgot password?</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== REGISTER PAGE ===================== -->
+<div class="page" id="page-register">
+  <div class="form-page">
+    <div class="form-card">
+      <h2 class="form-title" data-i18n="reg_title">Join Bamenda Connect</h2>
+      <p class="form-sub" data-i18n="reg_sub">Create your free account today</p>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:1rem;" data-i18n="reg_iam">I am a…</p>
+      <div class="role-toggle">
+        <button class="role-btn active" id="roleSeeker" onclick="setRole('seeker')">
+          <span class="role-icon"><i class="fa-solid fa-user"></i></span>
+          <span class="role-label" data-i18n="reg_seeker">Job Seeker</span>
+        </button>
+        <button class="role-btn" id="roleEmployer" onclick="setRole('employer')">
+          <span class="role-label" data-i18n="reg_employer">Employer</span>
+        </button>
+      </div>
+      <div class="alert" id="regAlert"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label data-i18n="reg_firstname">First Name</label>
+          <input type="text" id="regFirst" placeholder="John">
+        </div>
+        <div class="form-group">
+          <label data-i18n="reg_lastname">Last Name</label>
+          <input type="text" id="regLast" placeholder="Fon">
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="reg_email">Email Address</label>
+        <input type="email" id="regEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label data-i18n="reg_phone">Phone Number</label>
+        <div class="phone-prefix">
+          <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+          <input type="tel" id="regPhone" placeholder="6XX XXX XXX">
+        </div>
+      </div>
+      <div id="companyField" style="display:none;">
+        <div class="form-group">
+          <label data-i18n="reg_company">Company / Organization Name</label>
+          <input type="text" id="regCompany" placeholder="Your company name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="reg_pass">Password</label>
+        <div style="position:relative; display:flex; align-items:center;">
+          <input type="password" id="regPass" placeholder="Min. 8 chars, uppercase, lowercase, number" style="width:100%; padding-right:2.75rem;">
+          <button type="button"
+            onmousedown="document.getElementById('regPass').type='text'; this.querySelector('i').className='fa-regular fa-eye-slash'; this.style.color='var(--primary)';"
+            onmouseup="document.getElementById('regPass').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            onmouseleave="document.getElementById('regPass').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            ontouchstart="document.getElementById('regPass').type='text'; this.querySelector('i').className='fa-regular fa-eye-slash'; this.style.color='var(--primary)';"
+            ontouchend="document.getElementById('regPass').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0;line-height:1;">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="reg_pass2">Repeat Password</label>
+        <div style="position:relative; display:flex; align-items:center;">
+          <input type="password" id="regPassConfirm" placeholder="Repeat your password" style="width:100%; padding-right:2.75rem;">
+          <button type="button"
+            onmousedown="document.getElementById('regPassConfirm').type='text'; this.querySelector('i').className='fa-regular fa-eye-slash'; this.style.color='var(--primary)';"
+            onmouseup="document.getElementById('regPassConfirm').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            onmouseleave="document.getElementById('regPassConfirm').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            ontouchstart="document.getElementById('regPassConfirm').type='text'; this.querySelector('i').className='fa-regular fa-eye-slash'; this.style.color='var(--primary)';"
+            ontouchend="document.getElementById('regPassConfirm').type='password'; this.querySelector('i').className='fa-regular fa-eye'; this.style.color='var(--muted)';"
+            style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0;line-height:1;">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1.25rem; background:var(--primary-light); border-radius:8px; padding:0.85rem;">
+        <input type="checkbox" id="termsCheck" style="width:auto; margin-top:0.2rem; cursor:pointer;">
+        <label for="termsCheck" style="font-size:0.85rem; color:var(--text); cursor:pointer; line-height:1.5;">
+          I have read and agree to the <a href="#" onclick="showPage('terms')" style="color:var(--primary); font-weight:600; text-decoration:underline;">Terms &amp; Conditions</a> of Bamenda Connect
+        </label>
+      </div>
+      <button class="btn btn-primary" style="width:100%; padding:0.8rem; font-size:1rem; justify-content:center;" onclick="doRegister()" data-i18n="reg_btn">Create Free Account</button>
+      <div style="display:flex; align-items:center; gap:0.75rem; margin:1rem 0;">
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+        <span style="font-size:0.8rem; color:var(--muted);">or</span>
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+      </div>
+      <button class="btn" style="width:100%; padding:0.8rem; font-size:0.95rem; justify-content:center; background:#fff; color:#444; border:1.5px solid var(--border); gap:0.6rem;" onclick="signInWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px;"> Continue with Google
+      </button>
+      <p style="font-size:0.75rem; color:var(--muted); text-align:center; margin-top:0.75rem;">By signing up you agree to our <a href="#" class="form-link" style="font-size:0.75rem;">Terms of Use</a></p>
+      <div class="form-bottom"><span data-i18n="reg_have_acc">Already have an account?</span> <a href="#" class="form-link" onclick="showPage('login')" data-i18n="reg_login">Log in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PROFILE PAGE ===================== -->
+<div class="page" id="page-profile">
+  <div class="form-page">
+    <div class="form-card">
+      <h2 class="form-title" data-i18n="profile_title">My Profile</h2>
+      <p class="form-sub" data-i18n="profile_sub">View and edit your account details</p>
+      <div class="info-block" id="profileInfo">
+        <div class="form-group" style="text-align:center; margin-bottom:1rem;">
+          <img id="profileAvatar" src="https://www.gravatar.com/avatar/?d=mp&s=128" alt="Profile photo" style="border-radius:50%; width:95px; height:95px; object-fit:cover; display:block; margin:0 auto 0.75rem; border:2px solid var(--accent);">
+          <input type="file" id="profilePicInput" accept="image/*" onchange="handleProfilePic(this.files)" style="margin:0 auto; display:block;" />
+          <small style="color:var(--muted);" data-i18n="profile_pic_hint">Upload a profile picture (max 2MB)</small>
+        </div>
+        <div class="form-group">
+          <label data-i18n="profile_name">Name</label>
+          <input type="text" id="profileName" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label data-i18n="profile_email">Email</label>
+          <input type="email" id="profileEmail" placeholder="Your email">
+        </div>
+        <div class="form-group">
+          <label data-i18n="profile_phone">Phone</label>
+          <input type="tel" id="profilePhone" placeholder="Your phone number">
+        </div>
+        <div class="form-group">
+          <label data-i18n="profile_role_label">Role</label>
+          <input type="text" id="profileRoleDisplay" readonly style="background:var(--bg); font-weight:600; color:var(--primary);">
+        </div>
+        <div class="form-group" id="profileCompanyField" style="display:none;">
+          <label data-i18n="profile_company">Company</label>
+          <input type="text" id="profileCompany" placeholder="Your company name">
+        </div>
+
+      </div>
+      <div class="alert" id="profileAlert" style="display:none; margin-bottom:0.5rem;"></div>
+      <button class="btn btn-primary" style="width:100%; padding:0.8rem; font-size:1rem; justify-content:center; margin-bottom:0.75rem;" onclick="saveProfile()">Save Profile</button>
+      <button class="btn btn-outline" style="width:100%; padding:0.8rem; font-size:1rem; justify-content:center; margin-bottom:0.75rem;" onclick="showPage('home')">Back to Home</button>
+      <button class="btn" style="width:100%; padding:0.8rem; font-size:1rem; justify-content:center; background:var(--primary); color:#fff; border:none;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== POST JOB PAGE ===================== -->
+<div class="page" id="page-postjob">
+  <div class="postjob-header">
+    <div class="postjob-overlay"></div>
+    <div class="postjob-header-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.4rem;" data-i18n="postjob_title">Post a Job</h1>
+      <p style="color:#c8d5f5;" data-i18n="postjob_sub">Reach qualified candidates across Bamenda</p>
+    </div>
+  </div>
+  <div class="post-form-page">
+    <div class="form-card">
+      <h2 class="form-title">Post a Job</h2>
+      <p class="form-sub">Reach qualified candidates across Bamenda</p>
+      <div class="alert" id="postAlert"></div>
+      <div class="form-group">
+        <label>Job Title *</label>
+        <input type="text" id="pjTitle" placeholder="e.g. Primary School Teacher, Farm Manager">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="pjCategory">
+            <option value="">Select category</option>
+            <option>Agriculture</option>
+            <option>Education</option>
+            <option>Health</option>
+            <option>Construction</option>
+            <option>Trade</option>
+            <option>Technology</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Job Type *</label>
+          <select id="pjType">
+            <option>Full-time</option>
+            <option>Part-time</option>
+            <option>Contract</option>
+            <option>Seasonal</option>
+            <option>Volunteer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Location *</label>
+          <select id="pjLocation">
+            <option value="">Select area in Bamenda</option>
+            <option>Mile 4</option>
+            <option>Mile 2</option>
+            <option>Mile 1</option>
+            <option>Commercial Avenue</option>
+            <option>Up Station</option>
+            <option>Nkwen</option>
+            <option>Ntarikon</option>
+            <option>Cow Street</option>
+            <option>Food Market</option>
+            <option>Bamenda Town</option>
+            <option>Bambili</option>
+            <option>Bambui</option>
+            <option>Mankon</option>
+            <option>Bafut</option>
+            <option>Ndop</option>
+            <option>Wum</option>
+            <option>Tubah</option>
+            <option>Akum</option>
+            <option>Pinyin</option>
+            <option>Bali</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Salary (FCFA/month) <small style="color:var(--muted);font-weight:400;">(optional)</small></label>
+          <input type="text" id="pjSalary" placeholder="e.g. 50,000 or Negotiable">
+        </div>
+      </div>
+      <div class="form-group">
+        <label><i class="fa-solid fa-calendar-xmark" style="color:var(--primary);"></i> Application Deadline</label>
+        <input type="date" id="pjDeadline">
+        <small style="color:var(--muted); font-size:0.78rem;">Leave empty for no deadline</small>
+      </div>
+      <div class="form-group">
+        <label>Company / Employer Name *</label>
+        <input type="text" id="pjCompany" placeholder="Your organization name">
+      </div>
+      <div class="form-group">
+        <label>Job Description *</label>
+        <textarea id="pjDesc" placeholder="Describe the role, responsibilities, and what you're looking for…" style="min-height:140px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Requirements / Qualifications</label>
+        <textarea id="pjReqs" placeholder="Education level, experience, skills needed…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Contact Email *</label>
+        <input type="email" id="pjEmail" placeholder="jobs@yourcompany.com">
+      </div>
+      <div class="form-group">
+        <label>Contact Phone</label>
+        <div class="phone-prefix">
+          <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+          <input type="tel" id="pjPhone" placeholder="6XX XXX XXX">
+        </div>
+      </div>
+      <div style="background:var(--primary-light); border:1px solid var(--border); border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.5rem;" id="postingFeeBox">
+        <h4 style="font-size:0.9rem; font-weight:600; color:var(--primary); margin-bottom:0.4rem;"><i class="fa-solid fa-credit-card"></i> Posting Plan</h4>
+        <div id="postingFeeNote" style="font-size:0.85rem; color:var(--muted); line-height:1.6; margin-bottom:0.75rem;"></div>
+        <div id="postingPaymentFields">
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Payment Method</label>
+              <select id="pjPayMethod">
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="orange">Orange Money</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Your Phone Number</label>
+              <div class="phone-prefix">
+                <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+                <input type="tel" id="pjPayPhone" placeholder="6XX XXX XXX">
+              </div>
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-group" style="margin-bottom:0; width:100%;">
+              <label>Transaction ID</label>
+              <input type="text" id="pjTxId" placeholder="Enter Mobile Money transaction ID" style="width:100%; padding:0.85rem; border:1px solid var(--border); border-radius:10px;">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:1.25rem;">
+        <input type="checkbox" id="pjFeatured" style="width:auto;">
+        <label for="pjFeatured" style="font-size:0.88rem; cursor:pointer;">Make this a <strong>Featured Job</strong> (top of listings, highlighted — 2,000 FCFA)</label>
+      </div>
+      <button class="btn btn-primary" style="width:100%; padding:0.85rem; font-size:1rem; justify-content:center;" onclick="doPostJob()" data-i18n="postjob_btn">Submit Job Listing</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================== EMPLOYER DASHBOARD PAGE ===================== -->
+<div class="page" id="page-employer-dashboard">
+  <div class="postjob-header">
+    <div class="postjob-overlay"></div>
+    <div class="postjob-header-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.4rem;"><i class="fa-solid fa-gauge"></i> Employer Dashboard</h1>
+      <p style="color:#c8d5f5;">Manage your job listings and applicants</p>
+    </div>
+  </div>
+  <div class="section">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem;">
+      <div style="background:#fff; border-radius:12px; padding:1.25rem; text-align:center; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+        <div style="font-size:2rem; color:var(--primary); margin-bottom:0.5rem;"><i class="fa-solid fa-briefcase"></i></div>
+        <div style="font-size:1.8rem; font-weight:700;" id="empTotalJobs">0</div>
+        <div style="font-size:0.82rem; color:var(--muted);">Jobs Posted</div>
+      </div>
+      <div style="background:#fff; border-radius:12px; padding:1.25rem; text-align:center; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+        <div style="font-size:2rem; color:#2E7D32; margin-bottom:0.5rem;"><i class="fa-solid fa-file-lines"></i></div>
+        <div style="font-size:1.8rem; font-weight:700;" id="empTotalApps">0</div>
+        <div style="font-size:0.82rem; color:var(--muted);">Total Applications</div>
+      </div>
+    </div>
+    <div id="empJobsList"></div>
+  </div>
+</div>
+
+<!-- ===================== MY APPLICATIONS PAGE ===================== -->
+<div class="page" id="page-my-applications">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem;"><i class="fa-solid fa-briefcase" style="color:#C5A059;"></i> My Applications</h1>
+      <p style="color:#c8d5f5;">Track the status of your job applications</p>
+    </div>
+  </div>
+  <div class="section">
+    <div id="myAppsList"></div>
+  </div>
+</div>
+
+<!-- ===================== SAVED JOBS PAGE ===================== -->
+<div class="page" id="page-saved">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem;"><i class="fa-solid fa-bookmark"></i> Saved Jobs</h1>
+      <p style="color:#c8d5f5;">Jobs you have bookmarked for later</p>
+    </div>
+  </div>
+  <div class="section">
+    <div id="savedJobsGrid" class="jobs-grid"></div>
+  </div>
+</div>
+
+<!-- ===================== ABOUT US PAGE ===================== -->
+<div class="page" id="page-about">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.4rem;">About Bamenda Connect</h1>
+      <p style="color:#c8d5f5;">Connecting local talent with local employers</p>
+    </div>
+  </div>
+  <div class="section" style="max-width:800px;">
+    <div class="form-card">
+      <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:1rem; color:var(--primary);">Our Story</h2>
+      <p style="line-height:1.8; color:var(--muted); margin-bottom:1.5rem;">Bamenda Connect was born out of a simple observation — talented people in Bamenda were struggling to find jobs, and local employers were struggling to find the right candidates. The traditional methods of job searching through word of mouth, notice boards, and newspapers were no longer sufficient for a growing city like Bamenda.</p>
+      <p style="line-height:1.8; color:var(--muted); margin-bottom:1.5rem;">We built Bamenda Connect to bridge this gap — a platform designed specifically for the Bamenda Metropolitan Area, supporting both English and French, and integrated with local mobile money payment systems that our community already uses and trusts.</p>
+      <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:1rem; color:var(--primary);">Our Mission</h2>
+      <p style="line-height:1.8; color:var(--muted); margin-bottom:1.5rem;">To empower every person in Bamenda with equal access to employment opportunities, and to help local businesses find the talent they need to grow and thrive.</p>
+      <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:1rem; color:var(--primary);">Our Values</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:1.5rem;">
+        <div style="background:var(--bg); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-size:1.8rem; color:var(--primary); margin-bottom:0.5rem;"><i class="fa-solid fa-handshake"></i></div>
+          <h4 style="margin-bottom:0.3rem;">Community First</h4>
+          <p style="font-size:0.82rem; color:var(--muted);">Built for Bamenda, by people who understand Bamenda.</p>
+        </div>
+        <div style="background:var(--bg); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-size:1.8rem; color:var(--primary); margin-bottom:0.5rem;"><i class="fa-solid fa-shield-halved"></i></div>
+          <h4 style="margin-bottom:0.3rem;">Trust & Safety</h4>
+          <p style="font-size:0.82rem; color:var(--muted);">Every listing is reviewed to ensure quality and authenticity.</p>
+        </div>
+        <div style="background:var(--bg); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-size:1.8rem; color:var(--primary); margin-bottom:0.5rem;"><i class="fa-solid fa-globe"></i></div>
+          <h4 style="margin-bottom:0.3rem;">Bilingual</h4>
+          <p style="font-size:0.82rem; color:var(--muted);">Fully available in English and French for all Cameroonians.</p>
+        </div>
+      </div>
+      <div style="background:var(--primary-light); border-radius:10px; padding:1.25rem; text-align:center;">
+        <p style="font-size:0.9rem; color:var(--text);"><i class="fa-solid fa-envelope" style="color:var(--primary);"></i> &nbsp;<strong>info@bamendaconnect.cm</strong> &nbsp;|&nbsp; <i class="fa-solid fa-phone" style="color:var(--primary);"></i> &nbsp;<strong>+237 671 109 256</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CONTACT US PAGE ===================== -->
+<div class="page" id="page-contact">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.4rem;">Contact Us</h1>
+      <p style="color:#c8d5f5;">We'd love to hear from you</p>
+    </div>
+  </div>
+  <div class="section" style="max-width:700px;">
+    <div class="form-card">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:2rem;">
+        <div style="text-align:center; padding:1rem; background:var(--bg); border-radius:10px;">
+          <i class="fa-solid fa-phone" style="font-size:1.5rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
+          <p style="font-size:0.85rem; font-weight:600;">+237 671 109 256</p>
+          <p style="font-size:0.78rem; color:var(--muted);">Mon–Fri, 8am–6pm</p>
+        </div>
+        <div style="text-align:center; padding:1rem; background:var(--bg); border-radius:10px;">
+          <i class="fa-solid fa-envelope" style="font-size:1.5rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
+          <p style="font-size:0.85rem; font-weight:600;">info@bamendaconnect.cm</p>
+          <p style="font-size:0.78rem; color:var(--muted);">Reply within 24 hours</p>
+        </div>
+        <div style="text-align:center; padding:1rem; background:var(--bg); border-radius:10px;">
+          <i class="fa-solid fa-location-dot" style="font-size:1.5rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
+          <p style="font-size:0.85rem; font-weight:600;">Bamenda, NW Region</p>
+          <p style="font-size:0.78rem; color:var(--muted);">Cameroon</p>
+        </div>
+      </div>
+      <div class="alert" id="contactAlert"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Your Name *</label><input type="text" id="contactName" placeholder="Full name"></div>
+        <div class="form-group"><label>Email Address *</label><input type="email" id="contactEmail" placeholder="you@example.com"></div>
+      </div>
+      <div class="form-group"><label>Subject</label><input type="text" id="contactSubject" placeholder="How can we help?"></div>
+      <div class="form-group"><label>Message *</label><textarea id="contactMessage" placeholder="Write your message here…" style="min-height:140px;"></textarea></div>
+      <button class="btn btn-primary" style="width:100%; padding:0.85rem; font-size:1rem; justify-content:center;" onclick="submitContact()"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TERMS PAGE ===================== -->
+<div class="page" id="page-terms">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.4rem;">Terms &amp; Conditions</h1>
+      <p style="color:#c8d5f5;">Last updated: January 2026</p>
+    </div>
+  </div>
+  <div class="section" style="max-width:850px;">
+    <div class="form-card" style="line-height:1.9; color:var(--muted);">
+
+      <p style="margin-bottom:1.5rem; font-size:0.9rem;">Please read these Terms and Conditions carefully before registering or using the Bamenda Connect platform. By creating an account or using any part of our services, you confirm that you have read, understood, and agree to be bound by these Terms and Conditions in their entirety. If you do not agree with any part of these terms, you must not use our platform.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">1. Introduction and Definitions</h3>
+      <p style="margin-bottom:0.75rem;"><strong>1.1</strong> Bamenda Connect (hereinafter referred to as &quot;the Platform,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is a web-based employment platform operated in the Bamenda Metropolitan Area, Northwest Region of Cameroon. The Platform serves as an intermediary connecting job seekers and employers within the local community.</p>
+      <p style="margin-bottom:0.75rem;"><strong>1.2</strong> &quot;User&quot; refers to any individual or organization that accesses, registers on, or uses the Platform in any capacity, including but not limited to job seekers, employers, and visitors.</p>
+      <p style="margin-bottom:0.75rem;"><strong>1.3</strong> &quot;Job Seeker&quot; refers to a registered user who uses the Platform to search for and apply to job opportunities.</p>
+      <p style="margin-bottom:0.75rem;"><strong>1.4</strong> &quot;Employer&quot; refers to a registered user who uses the Platform to post job vacancies and review applications from job seekers.</p>
+      <p style="margin-bottom:1.5rem;"><strong>1.5</strong> &quot;Content&quot; refers to all information, text, data, images, and other materials submitted to or displayed on the Platform by users or by Bamenda Connect.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">2. Acceptance of Terms</h3>
+      <p style="margin-bottom:0.75rem;"><strong>2.1</strong> By accessing and using Bamenda Connect, you agree to be bound by these Terms and Conditions, our Privacy Policy, and any other policies or guidelines published on the Platform. These terms constitute a legally binding agreement between you and Bamenda Connect.</p>
+      <p style="margin-bottom:0.75rem;"><strong>2.2</strong> We reserve the right to modify these Terms and Conditions at any time. Changes will be effective immediately upon posting to the Platform. Your continued use of the Platform after any changes constitutes your acceptance of the new terms.</p>
+      <p style="margin-bottom:1.5rem;"><strong>2.3</strong> If you are registering on behalf of an organization or company, you represent and warrant that you have the authority to bind that organization to these Terms and Conditions.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">3. User Registration and Account Responsibilities</h3>
+      <p style="margin-bottom:0.75rem;"><strong>3.1</strong> To access certain features of the Platform, you must create an account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.</p>
+      <p style="margin-bottom:0.75rem;"><strong>3.2</strong> You are solely responsible for maintaining the confidentiality of your account credentials, including your password. You agree to notify Bamenda Connect immediately of any unauthorized use of your account or any other breach of security.</p>
+      <p style="margin-bottom:0.75rem;"><strong>3.3</strong> You may not create more than one account per person or organization. Creating multiple accounts to circumvent restrictions or bans is strictly prohibited.</p>
+      <p style="margin-bottom:0.75rem;"><strong>3.4</strong> You must be at least 18 years of age to register on the Platform. By registering, you confirm that you meet this age requirement.</p>
+      <p style="margin-bottom:1.5rem;"><strong>3.5</strong> Bamenda Connect reserves the right to suspend or terminate any account at its sole discretion, with or without notice, for any violation of these Terms and Conditions or for any conduct that we deem harmful to the Platform, its users, or third parties.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">4. Job Postings and Employer Responsibilities</h3>
+      <p style="margin-bottom:0.75rem;"><strong>4.1</strong> Employers are solely responsible for the accuracy, completeness, and legality of all job listings they post on the Platform. Bamenda Connect does not verify the accuracy of job postings and makes no representations or warranties regarding the same.</p>
+      <p style="margin-bottom:0.75rem;"><strong>4.2</strong> Employers must not post job listings that are fraudulent, misleading, discriminatory, or in violation of any applicable laws or regulations, including but not limited to laws relating to equal employment opportunity, non-discrimination, and labor rights.</p>
+      <p style="margin-bottom:0.75rem;"><strong>4.3</strong> Job listings must accurately describe the position, required qualifications, compensation, and working conditions. Employers must not use job listings as a means to collect personal information for purposes other than recruitment.</p>
+      <p style="margin-bottom:0.75rem;"><strong>4.4</strong> Bamenda Connect reserves the right to remove any job listing that violates these Terms and Conditions or that we deem inappropriate, without prior notice and without refund of any fees paid.</p>
+      <p style="margin-bottom:1.5rem;"><strong>4.5</strong> Employers agree to respond to job applications in a timely and professional manner and to treat all applicants with respect and dignity, regardless of their background, gender, religion, ethnicity, or disability status.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">5. Job Seeker Responsibilities</h3>
+      <p style="margin-bottom:0.75rem;"><strong>5.1</strong> Job seekers are responsible for the accuracy and completeness of all information provided in their profiles and job applications. Providing false or misleading information may result in immediate account suspension.</p>
+      <p style="margin-bottom:0.75rem;"><strong>5.2</strong> Job seekers must not apply for positions for which they are clearly unqualified or for which they have no genuine interest. Submitting applications in bad faith is prohibited.</p>
+      <p style="margin-bottom:0.75rem;"><strong>5.3</strong> Job seekers acknowledge that Bamenda Connect does not guarantee employment and that the Platform is merely a tool to facilitate connections between job seekers and employers.</p>
+      <p style="margin-bottom:1.5rem;"><strong>5.4</strong> Job seekers agree to conduct themselves professionally in all interactions with employers facilitated through the Platform and to honor any commitments made during the recruitment process.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">6. Payment Terms and Refund Policy</h3>
+      <p style="margin-bottom:0.75rem;"><strong>6.1</strong> Certain features of the Platform, including job posting services and job seeker account activation, require payment of fees. All fees are clearly displayed on the Platform prior to payment and are denominated in Central African Francs (FCFA).</p>
+      <p style="margin-bottom:0.75rem;"><strong>6.2</strong> All payments are processed exclusively through MTN Mobile Money and Orange Money. By making a payment, you confirm that you are the authorized user of the mobile money account used for the transaction.</p>
+      <p style="margin-bottom:0.75rem;"><strong>6.3</strong> All fees paid to Bamenda Connect are non-refundable once the corresponding service has been activated. This includes job posting fees once a listing has been published and account activation fees once access has been granted.</p>
+      <p style="margin-bottom:0.75rem;"><strong>6.4</strong> Bamenda Connect reserves the right to modify its fee structure at any time. Any changes to fees will be communicated to users with reasonable advance notice and will not affect services already paid for.</p>
+      <p style="margin-bottom:1.5rem;"><strong>6.5</strong> In the event of a technical error that results in a duplicate payment, users should contact Bamenda Connect at info@bamendaconnect.cm within 7 days of the transaction to request a review and potential refund of the duplicate charge.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">7. Intellectual Property Rights</h3>
+      <p style="margin-bottom:0.75rem;"><strong>7.1</strong> All content on the Bamenda Connect Platform, including but not limited to text, graphics, logos, images, software, and the overall design and layout of the Platform, is the exclusive property of Bamenda Connect and is protected by applicable intellectual property laws.</p>
+      <p style="margin-bottom:0.75rem;"><strong>7.2</strong> Users are granted a limited, non-exclusive, non-transferable license to access and use the Platform for its intended purposes. This license does not include the right to reproduce, distribute, modify, create derivative works of, publicly display, or commercially exploit any content from the Platform without the prior written consent of Bamenda Connect.</p>
+      <p style="margin-bottom:1.5rem;"><strong>7.3</strong> By submitting content to the Platform, including job listings, profiles, and application materials, users grant Bamenda Connect a non-exclusive, royalty-free license to use, display, and distribute such content for the purposes of operating and promoting the Platform.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">8. Privacy and Data Protection</h3>
+      <p style="margin-bottom:0.75rem;"><strong>8.1</strong> Bamenda Connect is committed to protecting the privacy and personal data of its users. We collect, process, and store personal data in accordance with applicable Cameroonian data protection laws and regulations.</p>
+      <p style="margin-bottom:0.75rem;"><strong>8.2</strong> Personal data collected by Bamenda Connect includes, but is not limited to, names, email addresses, phone numbers, employment history, and payment information. This data is used solely for the purpose of operating the Platform and providing services to users.</p>
+      <p style="margin-bottom:0.75rem;"><strong>8.3</strong> Bamenda Connect will not sell, rent, or otherwise transfer your personal data to third parties without your explicit consent, except as required by law or as necessary to provide the services of the Platform.</p>
+      <p style="margin-bottom:0.75rem;"><strong>8.4</strong> Users have the right to access, correct, and request the deletion of their personal data held by Bamenda Connect. To exercise these rights, please contact us at info@bamendaconnect.cm.</p>
+      <p style="margin-bottom:1.5rem;"><strong>8.5</strong> Bamenda Connect implements appropriate technical and organizational measures to protect personal data against unauthorized access, loss, or destruction. However, no method of data transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">9. Prohibited Conduct</h3>
+      <p style="margin-bottom:0.75rem;">Users of the Bamenda Connect Platform are strictly prohibited from engaging in any of the following activities:</p>
+      <p style="margin-bottom:0.5rem;"><strong>9.1</strong> Posting false, misleading, or fraudulent job listings or application materials.</p>
+      <p style="margin-bottom:0.5rem;"><strong>9.2</strong> Harassing, threatening, or intimidating other users of the Platform.</p>
+      <p style="margin-bottom:0.5rem;"><strong>9.3</strong> Using the Platform to distribute spam, unsolicited communications, or malicious software.</p>
+      <p style="margin-bottom:0.5rem;"><strong>9.4</strong> Attempting to gain unauthorized access to any part of the Platform or to other users' accounts.</p>
+      <p style="margin-bottom:0.5rem;"><strong>9.5</strong> Scraping, crawling, or otherwise extracting data from the Platform without the prior written consent of Bamenda Connect.</p>
+      <p style="margin-bottom:0.5rem;"><strong>9.6</strong> Using the Platform for any purpose that is unlawful, harmful, or contrary to public order or morality.</p>
+      <p style="margin-bottom:1.5rem;"><strong>9.7</strong> Impersonating any person or organization, or falsely representing your affiliation with any person or organization.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">10. Disclaimer of Warranties and Limitation of Liability</h3>
+      <p style="margin-bottom:0.75rem;"><strong>10.1</strong> The Bamenda Connect Platform is provided on an &quot;as is&quot; and &quot;as available&quot; basis without any warranties of any kind, either express or implied. Bamenda Connect does not warrant that the Platform will be uninterrupted, error-free, or free of viruses or other harmful components.</p>
+      <p style="margin-bottom:0.75rem;"><strong>10.2</strong> Bamenda Connect acts solely as an intermediary platform and is not a party to any employment relationship formed between employers and job seekers through the Platform. We are not responsible for the conduct of any user or for the outcome of any recruitment process.</p>
+      <p style="margin-bottom:0.75rem;"><strong>10.3</strong> To the maximum extent permitted by applicable law, Bamenda Connect shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or in connection with your use of the Platform.</p>
+      <p style="margin-bottom:1.5rem;"><strong>10.4</strong> Bamenda Connect's total liability to any user for any claim arising out of or in connection with these Terms and Conditions shall not exceed the total amount paid by that user to Bamenda Connect in the three months preceding the claim.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">11. Governing Law and Dispute Resolution</h3>
+      <p style="margin-bottom:0.75rem;"><strong>11.1</strong> These Terms and Conditions shall be governed by and construed in accordance with the laws of the Republic of Cameroon, without regard to its conflict of law provisions.</p>
+      <p style="margin-bottom:0.75rem;"><strong>11.2</strong> Any dispute arising out of or in connection with these Terms and Conditions shall first be subject to good-faith negotiation between the parties. If the dispute cannot be resolved through negotiation within 30 days, it shall be submitted to mediation.</p>
+      <p style="margin-bottom:1.5rem;"><strong>11.3</strong> If mediation fails, the dispute shall be submitted to the competent courts of Bamenda, Northwest Region, Cameroon, which shall have exclusive jurisdiction over such disputes.</p>
+
+      <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">12. Contact Information</h3>
+      <p style="margin-bottom:0.75rem;">If you have any questions, concerns, or complaints regarding these Terms and Conditions or the operation of the Bamenda Connect Platform, please contact us through any of the following channels:</p>
+      <p style="margin-bottom:0.5rem;"><strong>Email:</strong> info@bamendaconnect.cm</p>
+      <p style="margin-bottom:0.5rem;"><strong>Phone:</strong> +237 671 109 256</p>
+      <p style="margin-bottom:0.5rem;"><strong>Address:</strong> Bamenda, Northwest Region, Cameroon</p>
+      <p style="margin-bottom:1.5rem;"><strong>Business Hours:</strong> Monday to Friday, 8:00 AM to 6:00 PM (WAT)</p>
+
+      <div style="background:var(--primary-light); border-radius:10px; padding:1.25rem; margin-top:1rem; text-align:center;">
+        <p style="font-size:0.88rem; color:var(--text);">By registering on Bamenda Connect, you confirm that you have read, understood, and agree to these Terms and Conditions in their entirety.</p>
+        <button class="btn btn-primary" style="margin-top:1rem;" onclick="showPage('register')">I Accept — Create My Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FAQ PAGE ===================== -->
+<div class="page" id="page-faq">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.4rem;">Frequently Asked Questions</h1>
+      <p style="color:#c8d5f5;">Everything you need to know about Bamenda Connect</p>
+    </div>
+  </div>
+  <div class="section" style="max-width:800px;">
+    <div class="form-card">
+      {% for q, a in faq_items %}
+      <details style="border-bottom:1px solid var(--border); padding:1rem 0;">
+        <summary style="cursor:pointer; font-weight:600; font-size:0.95rem; color:var(--text); list-style:none; display:flex; justify-content:space-between; align-items:center;">
+          {{ q }} <i class="fa-solid fa-chevron-down" style="color:var(--primary); font-size:0.8rem;"></i>
+        </summary>
+        <p style="margin-top:0.75rem; font-size:0.88rem; color:var(--muted); line-height:1.7;">{{ a }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PRICING PAGE ===================== -->
+<div class="page" id="page-pricing">
+  <div style="background:var(--dark); padding:2.5rem 2rem; text-align:center; color:#fff;">
+    <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem;" data-i18n="pricing_title">Simple, Affordable Pricing</h1>
+    <p style="color:#adc4b3;" data-i18n="pricing_sub">Pay once per listing. No monthly fees. No hidden charges.</p>
+  </div>
+  <div class="section" style="max-width:900px;">
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name" data-i18n="pricing_seeker">Job Seeker</div>
+        <div class="price-amount" style="font-family:'Playfair Display',serif; font-size:2rem; color:var(--primary); margin:0.5rem 0;">500 <span style="font-size:1rem;">FCFA</span></div>
+        <div class="price-period">one-time activation</div>
+        <ul class="price-features">
+          <li>Browse all local jobs</li>
+          <li>Apply to unlimited jobs</li>
+          <li>Create job seeker profile</li>
+          <li>Job alert notifications</li>
+          <li>Direct employer contact</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%; justify-content:center; margin-top:0.75rem;" onclick="showPage('register')" data-i18n="pricing_create_acc">Create Free Account</button>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge" data-i18n="pricing_popular">Most Popular</div>
+        <div class="price-name" data-i18n="pricing_standard">Standard Listing</div>
+        <div class="price-amount" style="font-family:'Playfair Display',serif; font-size:2rem; color:var(--primary); margin:0.5rem 0;">1,000 <span style="font-size:1rem;">FCFA</span></div>
+        <div class="price-period">2 job posts</div>
+        <ul class="price-features">
+          <li>Post up to 2 jobs</li>
+          <li>30-day listing per job</li>
+          <li>Appear in all search results</li>
+          <li>Candidate applications via email</li>
+          <li>Employer dashboard access</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:0.75rem;" onclick="setEmployerPlan('standard'); showPage('postjob')" data-i18n="pricing_post_job">Post a Job</button>
+      </div>
+      <div class="price-card">
+        <div class="price-name" data-i18n="pricing_featured">Featured Listing</div>
+        <div class="price-amount" style="font-family:'Playfair Display',serif; font-size:2rem; color:var(--primary); margin:0.5rem 0;">2,000 <span style="font-size:1rem;">FCFA</span></div>
+        <div class="price-period">4 job posts</div>
+        <ul class="price-features">
+          <li>Post up to 4 jobs</li>
+          <li>60-day listing per job</li>
+          <li>⭐ Featured badge on all listings</li>
+          <li>Top of search results</li>
+          <li>Highlighted on homepage</li>
+          <li>Unlimited applicants</li>
+        </ul>
+        <button class="btn btn-orange" style="width:100%; justify-content:center; margin-top:0.75rem;" onclick="setEmployerPlan('featured'); showPage('postjob')" data-i18n="pricing_post_feat">Post Featured Job</button>
+      </div>
+    </div>
+    <div class="payment-section" style="border-radius:var(--radius); margin-top:1rem;">
+      <h2>Pay with Mobile Money</h2>
+      <p>Choose MTN MoMo or Orange Money and complete payment securely.</p>
+      <div class="payment-cards">
+        <div class="pay-card" onclick="openPayment('mtn')" style="cursor:pointer;">
+          <img src="{% static 'jobs/MTN.jpg' %}" class="pay-logo" alt="MTN Mobile Money">
+          <div class="pay-name">MTN Mobile Money</div>
+          <div class="pay-desc">Fast payment via MTN MoMo.</div>
+          <button class="btn btn-primary" style="margin-top:0.75rem; width:100%;" onclick="event.stopPropagation(); openPayment('mtn')">Pay via MTN</button>
+        </div>
+        <div class="pay-card" onclick="openPayment('orange')" style="cursor:pointer;">
+          <img src="{% static 'jobs/orange.jpg' %}" class="pay-logo" alt="Orange Money">
+          <div class="pay-name">Orange Money</div>
+          <div class="pay-desc">Fast payment via Orange Money.</div>
+          <button class="btn btn-primary" style="margin-top:0.75rem; width:100%;" onclick="event.stopPropagation(); openPayment('orange')">Pay via Orange Money</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAYMENT GATE PAGE ===================== -->
+<div class="page" id="page-payment">
+  <div class="form-page">
+    <div class="form-card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:0.75rem; color:var(--primary);" id="payGateIcon"><i class="fa-solid fa-credit-card"></i></div>
+      <h2 class="form-title" id="payGateTitle">Activate Your Account</h2>
+      <p class="form-sub" id="payGateDesc"></p>
+      <div class="alert" id="payGateAlert"></div>
+      <div style="background:var(--primary-light); border:1px solid var(--border); border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.5rem; text-align:center;">
+        <div style="display:flex; gap:1rem; justify-content:center; margin-bottom:0.75rem;">
+          <img src="{% static 'jobs/MTN.jpg' %}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+          <img src="{% static 'jobs/orange.jpg' %}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+        </div>
+        <p style="font-size:0.85rem; color:var(--muted);">Select your payment method and complete the payment.</p>
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label data-i18n="pay_gate_method">Payment Method</label>
+        <select id="payGateMethod">
+          <option value="mtn">MTN Mobile Money</option>
+          <option value="orange">Orange Money</option>
+        </select>
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label>Your Phone Number</label>
+        <div class="phone-prefix">
+          <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+          <input type="tel" id="payGatePhone" placeholder="6XX XXX XXX">
+        </div>
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label>Transaction ID</label>
+        <input type="text" id="payGateTxId" placeholder="Enter transaction ID" style="width:100%; padding:0.85rem; border:1px solid var(--border); border-radius:10px;">
+      </div>
+      <button class="btn btn-primary" style="width:100%; padding:0.85rem; font-size:1rem; justify-content:center;" onclick="submitPaymentGate()" data-i18n="pay_gate_btn">Confirm Payment & Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- I'M INTERESTED MODAL -->
+<div class="modal-bg" id="interestModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeInterestModal()">✕</button>
+    <h2 style="font-family:'Playfair Display',serif;margin-bottom:0.25rem;">Express Interest</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem;">Your details will be sent directly to the employer by email.</p>
+    <div class="alert" id="interestAlert"></div>
+    <div class="form-group"><label>Your Full Name *</label><input type="text" id="interestName" placeholder="Full name"></div>
+    <div class="form-group"><label>Your Email *</label><input type="email" id="interestEmail" placeholder="your@email.com"></div>
+    <div class="form-group">
+      <label>Your Phone</label>
+      <div class="phone-prefix">
+        <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+        <input type="tel" id="interestPhone" placeholder="6XX XXX XXX">
+      </div>
+    </div>
+    <div class="form-group"><label>Message to Employer (optional)</label><textarea id="interestMessage" placeholder="e.g. I am very interested in this position and available immediately..." style="min-height:80px;"></textarea></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.8rem;" onclick="submitInterest()">
+      <i class="fa-solid fa-paper-plane"></i> Send to Employer
+    </button>
+    <div id="interestThanks" style="display:none;text-align:center;padding:1.5rem 0;">
+      <div style="font-size:2.5rem;color:var(--primary);margin-bottom:0.75rem;"><i class="fa-solid fa-circle-check"></i></div>
+      <h3 style="font-family:'Playfair Display',serif;margin-bottom:0.5rem;">Interest Sent!</h3>
+      <p style="font-size:0.88rem;color:var(--muted);">The employer has been notified by email. They will contact you if interested.</p>
+      <button class="btn btn-primary" style="margin-top:1rem;" onclick="closeInterestModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT JOB MODAL -->
+<div class="modal-bg" id="editJobModal">
+  <div class="modal" style="max-width:600px;">
+    <button class="modal-close" onclick="document.getElementById('editJobModal').classList.remove('open')">✕</button>
+    <h2 style="font-family:'Playfair Display',serif;margin-bottom:1.25rem;">Edit Job</h2>
+    <div class="alert" id="editJobAlert"></div>
+    <input type="hidden" id="editJobId">
+    <div class="form-group"><label>Job Title *</label><input type="text" id="editTitle" placeholder="Job title"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="editCategory">
+          <option>Agriculture</option><option>Education</option><option>Health</option>
+          <option>Construction</option><option>Trade</option><option>Technology</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Job Type</label>
+        <select id="editType">
+          <option>Full-time</option><option>Part-time</option><option>Contract</option><option>Seasonal</option><option>Volunteer</option>
+        </select>
+      </div>
+    </div>
+      <div class="form-row">
+      <div class="form-group">
+        <label>Location</label>
+        <select id="editLocation">
+          <option value="">Select area</option>
+          <option>Mile 4</option><option>Mile 2</option><option>Mile 1</option>
+          <option>Commercial Avenue</option><option>Up Station</option><option>Nkwen</option>
+          <option>Ntarikon</option><option>Cow Street</option><option>Food Market</option>
+          <option>Bamenda Town</option><option>Bambili</option><option>Bambui</option>
+          <option>Mankon</option><option>Bafut</option><option>Ndop</option>
+          <option>Wum</option><option>Tubah</option><option>Akum</option>
+          <option>Pinyin</option><option>Bali</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Salary <small style="color:var(--muted);font-weight:400;">(optional)</small></label><input type="text" id="editSalary" placeholder="e.g. 80,000 or Negotiable"></div>
+    </div>
+    <div class="form-group"><label>Job Description *</label><textarea id="editDesc" style="min-height:120px;"></textarea></div>
+    <div class="form-group"><label>Requirements</label><textarea id="editReqs" style="min-height:80px;"></textarea></div>
+    <div class="form-group"><label>Contact Email *</label><input type="email" id="editEmail" placeholder="jobs@company.com"></div>
+    <div class="form-group">
+      <label>Contact Phone</label>
+      <div class="phone-prefix"><span class="prefix"><i class="fa-solid fa-phone"></i> +237</span><input type="tel" id="editPhone" placeholder="6XX XXX XXX"></div>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="btn btn-outline" style="flex:1;justify-content:center;color:var(--primary);border-color:var(--primary);" onclick="document.getElementById('editJobModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.8rem;" onclick="submitEditJob()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MESSAGES PAGE ===================== -->
+<div class="page" id="page-messages">
+  <div class="jobs-page-header">
+    <div class="jobs-page-overlay"></div>
+    <div class="jobs-page-content">
+      <h1 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.4rem;"><i class="fa-solid fa-comments"></i> Messages</h1>
+      <p style="color:#c8d5f5;">Your conversations on Bamenda Connect</p>
+    </div>
+  </div>
+  <div class="section" style="max-width:800px;">
+    <div id="inboxList"></div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="modal-bg" id="chatModal">
+  <div class="modal" style="max-width:520px;display:flex;flex-direction:column;height:85vh;padding:0;overflow:hidden;">
+    <!-- Header -->
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.75rem;background:#fff;border-radius:16px 16px 0 0;">
+      <div id="chatAvatar"><span>B<em style="color:#C5A059;">C</em></span></div>
+      <div style="flex:1;">
+        <div id="chatName" style="font-weight:700;font-size:0.95rem;color:var(--dark);"></div>
+        <div id="chatRole" style="font-size:0.75rem;color:var(--muted);"></div>
+      </div>
+      <button id="chatWhatsappBtn" style="display:none;background:#25D366;color:#fff;border:none;border-radius:10px;padding:0.4rem 0.9rem;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;gap:0.4rem;display:flex;align-items:center;">
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+      </button>
+      <button onclick="document.getElementById('chatModal').classList.remove('open')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);margin-left:0.5rem;">&#x2715;</button>
+    </div>
+    <!-- Messages -->
+    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:1.25rem;background:var(--bg);display:flex;flex-direction:column;gap:0.75rem;"></div>
+    <!-- Input -->
+    <div style="padding:1rem 1.25rem;border-top:1px solid var(--border);background:#fff;border-radius:0 0 16px 16px;display:flex;gap:0.5rem;">
+      <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:0.65rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;" onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <button onclick="sendChatMessage()" class="btn btn-primary" style="padding:0.65rem 1.1rem;border-radius:10px;"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- JOB DETAIL MODAL -->
+<div class="modal-bg" id="jobModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- APPLY MODAL -->
+<div class="modal-bg" id="applyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeApplyModal()">✕</button>
+    <h2 data-i18n="apply_title">Apply for Job</h2>
+    <div class="apply-steps">
+      <div class="step-dot active" id="step1">1</div>
+      <div style="flex:1; height:2px; background:var(--border); align-self:center;"></div>
+      <div class="step-dot" id="step2">2</div>
+      <div style="flex:1; height:2px; background:var(--border); align-self:center;"></div>
+      <div class="step-dot" id="step3">✓</div>
+    </div>
+    <div id="applyStep1">
+      <div class="form-group"><label data-i18n="apply_name">Your Full Name *</label><input type="text" id="applyName" placeholder="Full name"></div>
+      <div class="form-group"><label data-i18n="apply_email">Email Address *</label><input type="email" id="applyEmail" placeholder="your@email.com"></div>
+      <div class="form-group">
+        <label data-i18n="apply_phone">Phone Number</label>
+        <div class="phone-prefix">
+          <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+          <input type="tel" id="applyPhone" placeholder="6XX XXX XXX">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%; justify-content:center; padding:0.75rem;" onclick="applyNext()" data-i18n="apply_continue">Continue →</button>
+    </div>
+    <div id="applyStep2" style="display:none;">
+      <div class="form-group"><label data-i18n="apply_cover">Cover Letter / Message to Employer</label><textarea id="applyCover" placeholder="Why are you a good fit for this job?"></textarea></div>
+      <div class="form-group"><label data-i18n="apply_exp">Relevant Experience</label><textarea id="applyExp" placeholder="Briefly describe your experience…"></textarea></div>
+      <div class="form-group">
+        <label><i class="fa-solid fa-file-pdf" style="color:var(--primary);"></i> Upload CV / Resume <span style="color:var(--muted); font-size:0.78rem;">(PDF, DOC — max 5MB)</span></label>
+        <input type="file" id="applyCV" accept=".pdf,.doc,.docx" style="width:100%; padding:0.5rem; border:1.5px solid var(--border); border-radius:8px;">
+      </div>
+      <div style="display:flex; gap:0.75rem;">
+        <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="applyBack()" data-i18n="apply_back">← Back</button>
+        <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="applySubmit()" data-i18n="apply_submit">Submit Application</button>
+      </div>
+    </div>
+    <div id="applyStep3" style="display:none; text-align:center; padding:1rem 0;">
+      <div style="font-size:3rem; margin-bottom:1rem; color:var(--primary);"><i class="fa-solid fa-circle-check"></i></div>
+      <h3 style="font-family:'Playfair Display',serif; color:var(--dark); margin-bottom:0.5rem;" data-i18n="apply_sent">Application Sent!</h3>
+      <p style="color:var(--muted); font-size:0.9rem; line-height:1.6;" data-i18n="apply_sent_desc">Your application has been sent to the employer. They will contact you if shortlisted. Good luck!</p>
+      <button class="btn btn-primary" style="margin-top:1.25rem;" onclick="closeApplyModal()" data-i18n="apply_done">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-bg" id="forgotModal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('forgotModal').classList.remove('open')">✕</button>
+    <h2 style="font-family:'Playfair Display',serif; margin-bottom:0.5rem;">Reset Password</h2>
+    <div id="forgotStep1">
+      <p style="font-size:0.88rem; color:var(--muted); margin-bottom:1.25rem;">Enter your email and we'll send you a reset link.</p>
+      <div class="alert" id="forgotAlert"></div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="forgotEmail" placeholder="you@example.com"></div>
+      <button class="btn btn-primary" style="width:100%; justify-content:center; padding:0.8rem;" onclick="sendPasswordReset()">Send Reset Link</button>
+    </div>
+    <div id="forgotStep2" style="display:none; text-align:center; padding:1rem 0;">
+      <div style="font-size:3rem; color:var(--primary); margin-bottom:1rem;"><i class="fa-solid fa-envelope-circle-check"></i></div>
+      <h3 style="margin-bottom:0.5rem;">Check your email</h3>
+      <p style="font-size:0.88rem; color:var(--muted);">A password reset link has been sent to your email. Check your inbox and follow the instructions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="modal-bg" id="resetModal">
+  <div class="modal">
+    <h2 style="font-family:'Playfair Display',serif; margin-bottom:0.5rem;">Set New Password</h2>
+    <div class="alert" id="resetAlert"></div>
+    <div class="form-group"><label>New Password</label><input type="password" id="resetPass" placeholder="Min. 6 characters"></div>
+    <div class="form-group"><label>Confirm Password</label><input type="password" id="resetPassConfirm" placeholder="Repeat new password"></div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center; padding:0.8rem;" onclick="confirmPasswordReset()">Reset Password</button>
+  </div>
+</div>
+
+<!-- NEWSLETTER SIGNUP -->
+<div class="newsletter-section">
+  <div class="newsletter-content">
+    <h3 data-i18n="newsletter_title">Stay Updated with Bamenda Jobs</h3>
+    <p data-i18n="newsletter_sub">Get the latest job opportunities and career tips delivered to your inbox.</p>
+    <div class="newsletter-form">
+      <input type="email" name="newsletterEmail" autocomplete="email" placeholder="Enter your email address" id="newsletterEmail">
+      <button type="button" id="newsletterSubscribeBtn" class="btn btn-primary" data-i18n="newsletter_btn" onclick="subscribeNewsletter()">Subscribe</button>
+    </div>
+    <div id="newsletterAlert"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-cols">
+      <div class="footer-col">
+        <div style="font-family:'Playfair Display',serif; color:#fff; font-size:1.3rem; margin-bottom:0.75rem;">Bamenda<span style="color:var(--yellow);">Connect</span></div>
+        <p style="font-size:0.82rem; line-height:1.6;" data-i18n="footer_desc">Connecting local talent with local employers across Bamenda Metropolitan Area, Cameroon.</p>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+          <a href="https://facebook.com" target="_blank" style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1877F2'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="https://wa.me/237671109256" target="_blank" style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#25D366'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="https://linkedin.com" target="_blank" style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#0A66C2'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_seekers">For Job Seekers</h4>
+        <a href="#" onclick="showPage('jobs')" data-i18n="nav_jobs">Browse Jobs</a>
+        <a href="#" onclick="showPage('register')" data-i18n="footer_create">Create Account</a>
+        <a href="#" onclick="showPage('login')" data-i18n="nav_login">Log In</a>
+        <a href="#" onclick="showPage('faq')">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_employers">For Employers</h4>
+        <a href="#" onclick="showPage('postjob')" data-i18n="nav_postjob">Post a Job</a>
+        <a href="#" onclick="showPage('pricing')" data-i18n="nav_pricing">Pricing</a>
+        <a href="#" onclick="showPage('register')" data-i18n="footer_emp_acc">Employer Account</a>
+        <a href="#" onclick="showPage('about')">About Us</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#" onclick="showPage('about')">About Us</a>
+        <a href="#" onclick="showPage('contact')">Contact Us</a>
+        <a href="#" onclick="showPage('terms')">Terms & Conditions</a>
+        <a href="#" onclick="showPage('faq')">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_contact">Contact Us</h4>
+        <a href="#"><i class="fa-solid fa-phone"></i> +237 671109256</a>
+        <a href="#"><i class="fa-solid fa-envelope"></i> info@bamendaconnect.cm</a>
+        <a href="#"><i class="fa-solid fa-location-dot"></i> Bamenda, Northwest Region, CM</a>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:1.25rem; font-size:0.8rem;">
+      <span data-i18n="footer_copy">© 2026 Bamenda Connect. Made with ❤️ for the Bamenda community, Cameroon.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="{% static 'jobs/script-backend.js' %}?v=69"></script>
+</body>
+</html>

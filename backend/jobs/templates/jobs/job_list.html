@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tubah Jobs | Find Your Career</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .job-card { transition: transform 0.2s; border-left: 5px solid #0d6efd; }
+        .job-card:hover { transform: scale(1.02); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">Tubah Jobs</span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-secondary mb-0">Current Job Openings</h2>
+    <a href="{% url 'create_job' %}" class="btn btn-success">+ Post a New Job</a>
+</div>
+    
+    <div class="row">
+        {% for job in jobs %}
+        <div class="col-md-12 mb-3">
+            <div class="card job-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title text-primary mb-1">{{ job.title }}</h5>
+                        <span class="badge bg-light text-dark border">{{ job.location }}</span>
+                    </div>
+                    <p class="text-muted small">Posted: {{ job.created_at|date:"M d, Y" }}</p>
+                    <p class="card-text">{{ job.description|truncatewords:30 }}</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
+                    <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this job?')">Delete</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="lead text-muted">No jobs available at the moment. Check back soon!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

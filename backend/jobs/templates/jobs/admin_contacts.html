@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Messages — Bamenda Connect Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #F0F2F5; color: #1A1A1A; }
+  .sidebar { width: 240px; background: linear-gradient(180deg, #001F5B, #003399); min-height: 100vh; position: fixed; top: 0; left: 0; padding: 2rem 1.25rem; }
+  .sidebar .brand { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.3rem; margin-bottom: 2rem; }
+  .sidebar .brand span { color: #C5A059; }
+  .sidebar a { display: flex; align-items: center; gap: 0.75rem; color: rgba(255,255,255,0.75); text-decoration: none; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 0.3rem; transition: all 0.2s; }
+  .sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .main { margin-left: 240px; padding: 2rem; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+  .topbar h1 { font-size: 1.5rem; font-weight: 600; }
+  .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 1rem; }
+  .msg-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; }
+  .msg-name { font-weight: 600; font-size: 0.95rem; }
+  .msg-email { font-size: 0.82rem; color: #777; }
+  .msg-subject { font-size: 0.88rem; font-weight: 500; color: #003399; margin-bottom: 0.5rem; }
+  .msg-body { font-size: 0.85rem; color: #555; line-height: 1.7; }
+  .msg-date { font-size: 0.78rem; color: #aaa; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="brand">Bamenda<span>Connect</span></div>
+  <a href="/dashboard/"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+  <a href="/dashboard/users/"><i class="fa-solid fa-users"></i> Users</a>
+  <a href="/dashboard/jobs/"><i class="fa-solid fa-briefcase"></i> Jobs</a>
+  <a href="/dashboard/applications/"><i class="fa-solid fa-file-lines"></i> Applications</a>
+  <a href="/dashboard/contacts/" class="active"><i class="fa-solid fa-envelope"></i> Messages</a>
+  <a href="/"><i class="fa-solid fa-globe"></i> View Site</a>
+  <a href="/dashboard/logout/" style="color:#ffb3b3;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+</div>
+<div class="main">
+  <div class="topbar">
+    <h1><i class="fa-solid fa-envelope" style="color:#003399; margin-right:0.5rem;"></i> Contact Messages ({{ messages.count }})</h1>
+  </div>
+  {% for msg in messages %}
+  <div class="card">
+    <div class="msg-header">
+      <div>
+        <div class="msg-name">{{ msg.name }}</div>
+        <div class="msg-email">{{ msg.email }}</div>
+      </div>
+      <div class="msg-date">{{ msg.created_at|date:"d M Y, H:i" }}</div>
+    </div>
+    <div class="msg-subject">{{ msg.subject }}</div>
+    <div class="msg-body">{{ msg.message }}</div>
+  </div>
+  {% empty %}
+  <div class="card" style="text-align:center; color:#aaa; padding:3rem;">No messages yet</div>
+  {% endfor %}
+</div>
+</body>
+</html>
