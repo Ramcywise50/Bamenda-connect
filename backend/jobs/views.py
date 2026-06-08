@@ -9,20 +9,22 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
-import json
 import jwt
+import secrets
 from datetime import datetime, timedelta
 from .models import UserProfile, Job, JobApplication, Rating, ContactMessage, Notification, SiteRating, Message
 from .serializers import (
     RegisterSerializer, LoginSerializer, UserSerializer,
     JobListSerializer, JobDetailSerializer, JobApplicationSerializer
 )
+
+password_reset_tokens = {}
+payment_transactions = {}
 
 
 # ===== TEMPLATE VIEWS =====
@@ -37,7 +39,7 @@ def home(request):
         ("How do I know if my application was received?", "You will receive an email confirmation immediately after submitting your application. You can also track your application status in your profile under My Applications."),
         ("Can I switch from Job Seeker to Employer?", "Yes. Go to your profile, click on the Employer role button, and complete the activation payment for your new role."),
         ("Is Bamenda Connect available in French?", "Yes! Click the FR/EN button in the navigation bar to switch between English and French at any time."),
-        ("How do I contact Bamenda Connect?", "You can reach us at info@bamendaconnect.cm or call +237 671 109 256. You can also use the Contact Us page on the website."),
+        ("How do I contact Bamenda Connect?", "You can reach us at bamendaconnect@gmail.com or call +237 671 109 256. You can also use the Contact Us page on the website."),
     ]
     return render(request, 'jobs/index.html', {'faq_items': faq_items})
 
@@ -309,6 +311,12 @@ def post_job(request):
     except:
         return Response({'status': 'error', 'message': 'Unauthorized'}, status=401)
 
+    if not profile.paid:
+        return Response({'status': 'error', 'message': 'Please complete payment to post jobs', 'action': 'payment_required'}, status=403)
+
+    if profile.job_posts_remaining <= 0:
+        return Response({'status': 'error', 'message': 'No job posts remaining. Please purchase more posts.', 'action': 'purchase_posts'}, status=403)
+
     data = request.data
     required = ['title', 'category', 'description', 'contact_email']
     for field in required:
@@ -331,6 +339,9 @@ def post_job(request):
         pay_method=data.get('pay_method', ''),
         pay_phone=data.get('pay_phone', ''),
     )
+
+    profile.job_posts_remaining -= 1
+    profile.save()
 
     try:
         recipient_emails = [user.email]
@@ -437,7 +448,7 @@ def submit_contact(request):
             subject=f"New Contact Message: {msg.subject}",
             message=f"From: {msg.name} ({msg.email})\n\n{msg.message}",
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['info@bamendaconnect.cm'],
+            recipient_list=['bamendaconnect@gmail.com'],
             fail_silently=True,
         )
         send_mail(
@@ -480,7 +491,7 @@ def subscribe_newsletter(request):
             'Thank you for subscribing to Bamenda Connect! You\'ll now receive the latest job opportunities and career tips in Bamenda.\n\n'
             'Stay connected,\n'
             'The Bamenda Connect Team\n\n'
-            'info@bamendaconnect.cm'
+            'bamendaconnect@gmail.com'
         )
         try:
             send_mail(
@@ -1092,6 +1103,24 @@ def delete_conversation(request, user_id):
 @csrf_exempt
 @api_view(['GET'])
 def unread_message_count(request):
+    auth_header = request.headers.get('Authorization', '')
+    print(f"DEBUG: Authorization header: {auth_header}")
+    try:
+        token = auth_header.replace('Bearer ', '')
+        print(f"DEBUG: Token extracted: {token[:20]}..." if token else "DEBUG: No token")
+        payload = jwt.decode(token, 'your-secret-key', algorithms=['HS256'])
+        user = User.objects.get(id=payload['user_id'])
+        profile = user.userprofile
+    except Exception as e:
+        print(f"DEBUG: Auth error: {str(e)}")
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=401)
+    count = Message.objects.filter(receiver=profile, is_read=False).count()
+    return Response({'status': 'success', 'unread': count})
+
+# ===== PAYMENT SYSTEM =====
+@csrf_exempt
+@api_view(['POST'])
+def payment_initiate(request):
     try:
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
         payload = jwt.decode(token, 'your-secret-key', algorithms=['HS256'])
@@ -1099,9 +1128,98 @@ def unread_message_count(request):
         profile = user.userprofile
     except:
         return Response({'status': 'error', 'message': 'Unauthorized'}, status=401)
-    count = Message.objects.filter(receiver=profile, is_read=False).count()
-    return Response({'status': 'success', 'unread': count})
 
+    subscription_type = request.data.get('subscription_type')
+    if subscription_type not in ['seeker', 'employer']:
+        return Response({'status': 'error', 'message': 'Invalid subscription type'}, status=400)
+
+    amount = 500 if subscription_type == 'seeker' else 1000
+    transaction_id = secrets.token_urlsafe(16)
+
+    payment_transactions[transaction_id] = {
+        'user_id': user.id,
+        'subscription_type': subscription_type,
+        'amount': amount,
+        'created_at': datetime.utcnow(),
+        'expires': datetime.utcnow() + timedelta(minutes=10)
+    }
+
+    return Response({
+        'status': 'success',
+        'transaction_id': transaction_id,
+        'amount': amount,
+        'subscription_type': subscription_type
+    })
+
+
+@csrf_exempt
+@api_view(['POST'])
+def payment_confirm(request):
+    transaction_id = request.data.get('transaction_id')
+
+    if not transaction_id or transaction_id not in payment_transactions:
+        return Response({'status': 'error', 'message': 'Invalid or expired transaction'}, status=400)
+
+    trans = payment_transactions[transaction_id]
+
+    if datetime.utcnow() > trans['expires']:
+        del payment_transactions[transaction_id]
+        return Response({'status': 'error', 'message': 'Transaction expired'}, status=400)
+
+    try:
+        user = User.objects.get(id=trans['user_id'])
+        profile = user.userprofile
+    except User.DoesNotExist:
+        return Response({'status': 'error', 'message': 'User not found'}, status=404)
+
+    profile.paid = True
+    profile.last_paid_date = timezone.now()
+
+    if trans['subscription_type'] == 'employer':
+        profile.job_posts_remaining = 2
+
+    profile.save()
+    del payment_transactions[transaction_id]
+
+    # Send payment confirmation email
+    try:
+        amount_text = "1,000 FCFA (Standard - 2 job posts)" if trans['subscription_type'] == 'employer' else "500 FCFA (Job Seeker access)"
+        send_mail(
+            subject='✅ Payment Confirmed — Bamenda Connect',
+            message=f"Dear {user.first_name or 'User'},\n\nYour payment has been confirmed!\n\nAmount: {amount_text}\nTransaction ID: {transaction_id}\n\nYou can now use all features on Bamenda Connect.\n\nThank you for joining us!\n\nBest regards,\nBamenda Connect Team\nbamendaconnect@gmail.com",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+    except:
+        pass
+
+    return Response({
+        'status': 'success',
+        'message': 'Payment confirmed',
+        'paid': True,
+        'posts_remaining': profile.job_posts_remaining if profile.role == 'employer' else 0
+    })
+
+
+@csrf_exempt
+@api_view(['GET'])
+def payment_status(request):
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        payload = jwt.decode(token, 'your-secret-key', algorithms=['HS256'])
+        user = User.objects.get(id=payload['user_id'])
+        profile = user.userprofile
+    except:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=401)
+
+    return Response({
+        'status': 'success',
+        'paid': profile.paid,
+        'posts_remaining': profile.job_posts_remaining,
+        'role': profile.role,
+        'last_paid_date': profile.last_paid_date.isoformat() if profile.last_paid_date else None
+    })
 
 @login_required(login_url='/dashboard/login/')
 @user_passes_test(is_admin, login_url='/dashboard/login/')

@@ -18,6 +18,8 @@ class UserProfile(models.Model):
     pay_method = models.CharField(max_length=20, blank=True)
     pay_phone = models.CharField(max_length=20, blank=True)
     job_alert_category = models.CharField(max_length=50, blank=True)
+    job_posts_remaining = models.IntegerField(default=0)
+    last_paid_date = models.DateTimeField(null=True, blank=True)
     # Seeker profile fields
     bio = models.TextField(blank=True)
     skills = models.TextField(blank=True)
@@ -79,8 +81,8 @@ class Job(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            days = 60 if self.is_featured else 30
-            self.expires_at = timezone.now() + timedelta(days=days)
+            # All job postings now stay active for 60 days
+            self.expires_at = timezone.now() + timedelta(days=60)
         super().save(*args, **kwargs)
 
     @property

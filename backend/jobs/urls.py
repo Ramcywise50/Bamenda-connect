@@ -8,7 +8,8 @@ from .views import (
     get_notifications, mark_notifications_read, seeker_profile, update_seeker_profile,
     request_password_reset, confirm_password_reset, increment_job_views, verify_employer,
     submit_site_rating, get_site_ratings, like_site_rating, admin_ratings, job_interest,
-    edit_job, delete_job, send_message, get_inbox, get_conversation, unread_message_count, delete_message, delete_conversation, ping_online
+    edit_job, delete_job, send_message, get_inbox, get_conversation, unread_message_count, delete_message, delete_conversation, ping_online,
+    payment_initiate, payment_confirm, payment_status
 )
 
 urlpatterns = [
@@ -59,5 +60,8 @@ urlpatterns = [
     path('api/site-ratings/', get_site_ratings, name='get_site_ratings'),
     path('api/site-ratings/submit/', submit_site_rating, name='submit_site_rating'),
     path('api/site-ratings/<int:rating_id>/like/', like_site_rating, name='like_site_rating'),
+    path('api/payment/initiate/', payment_initiate, name='payment_initiate'),
+    path('api/payment/confirm/', payment_confirm, name='payment_confirm'),
+    path('api/payment/status/', payment_status, name='payment_status'),
     path('dashboard/ratings/', admin_ratings, name='admin_ratings'),
 ]

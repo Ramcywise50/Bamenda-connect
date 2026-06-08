@@ -9,7 +9,7 @@ from django.conf import settings
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['id', 'role', 'company_name', 'phone_number', 'created_at']
+        fields = ['id', 'role', 'company_name', 'phone_number', 'created_at', 'paid', 'job_posts_remaining', 'last_paid_date']
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
@@ -27,13 +27,14 @@ class JobListSerializer(serializers.ModelSerializer):
     type = serializers.CharField(source='job_type')
     desc = serializers.CharField(source='description')
     reqs = serializers.CharField(source='requirements')
+    expires_at = serializers.DateTimeField()
     date = serializers.SerializerMethodField()
     employer_profile_id = serializers.SerializerMethodField()
     
     class Meta:
         model = Job
         fields = ['id', 'title', 'company', 'company_name', 'category', 'type', 'location', 'salary', 
-                  'desc', 'reqs', 'contact', 'phone', 'featured', 'icon', 'date', 'employer_profile_id']
+                  'desc', 'reqs', 'contact', 'phone', 'featured', 'icon', 'expires_at', 'date', 'employer_profile_id']
 
     def get_employer_profile_id(self, obj):
         return obj.employer.id if obj.employer else None

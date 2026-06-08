@@ -78,6 +78,8 @@ nav {
 }
 .logo { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.5rem; letter-spacing: -0.5px; }
 .logo span { color: var(--accent); }
+.logo-img { height: 80px; object-fit: contain; transition: filter 0.3s ease; filter: brightness(1) drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+body.dark-mode .logo-img { filter: brightness(1.1) drop-shadow(0 2px 4px rgba(255,255,255,0.1)); }
 .nav-links { display: flex; gap: 0.5rem; align-items: center; }
 .nav-links a { color: #E8EEFF; text-decoration: none; font-size: 0.9rem; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.2s; }
 .nav-links a:hover { color: #fff; background: rgba(197,160,89,0.25); }
@@ -168,7 +170,22 @@ body.dark-mode .hero { background: linear-gradient(135deg, #121212 0%, #1A1A2E 4
 }
 .search-bar input { flex: 1 1 auto; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 0.9rem 1rem; color: #333; background: transparent; border-radius: 999px; min-width: auto; }
 .search-bar input::placeholder { color: #999; }
-.search-bar select { display: none !important; }
+.search-bar select {
+  flex: 0 0 170px;
+  min-width: 150px;
+  border: none;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: #333;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
 .search-bar button { flex-shrink: 0; border: none; border-radius: 999px; background: linear-gradient(90deg, #B08A45, #C5A059 45%, #D4B06A 100%); color: #fff; padding: 0 1.6rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, background 0.2s ease; font-size: 0.95rem; white-space: nowrap; box-shadow: 0 4px 12px rgba(197, 160, 89, 0.25); height: calc(100% - 8px); align-self: center; }
 .search-bar button:hover { transform: translateY(-2px); background: linear-gradient(90deg, #9A7A3A, #B08A45 45%, #C5A059 100%); box-shadow: 0 6px 16px rgba(197, 160, 89, 0.35); }
 .search-bar button i { margin-right: 0.5rem; }
@@ -177,7 +194,11 @@ body.dark-mode .search-bar { background: #1E1E1E !important; box-shadow: 0 4px 1
 body.dark-mode .search-bar span { color: #999 !important; background: transparent !important; }
 body.dark-mode .search-bar input { background: transparent !important; color: #E0E0E0 !important; }
 body.dark-mode .search-bar input::placeholder { color: #888 !important; }
-body.dark-mode .search-bar select { display: none !important; }
+body.dark-mode .search-bar select {
+  background: #23232c !important;
+  color: #E0E0E0 !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+}
 body.dark-mode #searchSuggestions { background: #1E1E1E !important; color: #FFFFFF !important; border: 1px solid #2A2A2A !important; }
 
 body.dark-mode .search-bar button { background: linear-gradient(90deg, #D4B06A, #FFE033 45%, #F4D03A 100%) !important; color: #121212 !important; font-weight: 600 !important; }
@@ -429,17 +450,17 @@ body.dark-mode .how-step h3 { color: #E0E0E0; }
 .jobs-page-content { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
 .jobs-page-header .search-bar {
   display: flex !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   justify-content: center !important;
   align-items: center !important;
   gap: 0.75rem !important;
   width: 100% !important;
-  max-width: 550px !important;
+  max-width: 980px !important;
   margin: 0 auto !important;
-  padding: 0.6rem !important;
-  border-radius: 999px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  padding: 0.8rem 1rem !important;
+  border-radius: 30px !important;
+  background: #fff !important;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.14) !important;
 }
 .jobs-page-header .search-bar span {
   flex-shrink: 0;
@@ -448,27 +469,33 @@ body.dark-mode .how-step h3 { color: #E0E0E0; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff !important;
+  background: transparent !important;
   border-radius: 50% !important;
   color: #999 !important;
 }
 .jobs-page-header .search-bar input {
-  flex: 1 1 auto !important;
-  border-radius: 999px !important;
-  padding: 0.9rem 1.2rem !important;
-  background: #fff !important;
+  flex: 1 1 100% !important;
+  border-radius: 18px !important;
+  padding: 0.95rem 1.2rem !important;
+  background: transparent !important;
   font-size: 0.95rem !important;
   border: none !important;
   outline: none !important;
   color: #333 !important;
   min-width: 0 !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  box-shadow: none !important;
 }
 .jobs-page-header .search-bar input::placeholder {
   color: #bbb !important;
 }
 .jobs-page-header .search-bar select {
-  display: none !important;
+  flex: 1 1 calc(33.333% - 0.5rem) !important;
+  min-width: 120px !important;
+  width: auto !important;
+  border-radius: 18px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 .jobs-page-header .search-bar button {
   flex: 0 0 auto !important;
@@ -606,7 +633,8 @@ footer a { color: var(--accent); text-decoration: none; }
     border-radius: 999px;
   }
   .search-bar select {
-    display: none !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
   }
   .search-bar button {
     flex: 1 1 100%;
@@ -755,7 +783,8 @@ footer a { color: var(--accent); text-decoration: none; }
     background: #fff !important;
   }
   .search-bar select {
-    display: none !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
   }
   .search-bar button {
     flex: 0 0 auto !important;
@@ -788,7 +817,8 @@ footer a { color: var(--accent); text-decoration: none; }
     border-radius: 999px !important;
   }
   .jobs-page-header .search-bar select {
-    display: none !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
   }
   .jobs-page-header .search-bar button {
     flex: 0 0 auto !important;
@@ -1041,17 +1071,20 @@ footer a { color: var(--accent); text-decoration: none; }
 
 /* Extra small phones (Android) — stack search input and button to avoid overlap */
 @media (max-width: 420px) {
-  .search-bar { flex-direction: column !important; align-items: stretch; }
-  .search-bar input { width: 100% !important; box-sizing: border-box; font-size: 0.9rem !important; }
+  .search-bar { flex-wrap: wrap !important; align-items: stretch !important; }
+  .search-bar input { flex: 1 1 100% !important; width: 100% !important; box-sizing: border-box; font-size: 0.9rem !important; }
+  .search-bar select { flex: 1 1 100% !important; width: 100% !important; box-sizing: border-box; }
   .search-bar button { width: 100% !important; margin-top: 8px !important; box-sizing: border-box; }
-  .search-bar span { align-self: flex-start !important; margin-left: 6px !important; }
+  .search-bar span { margin-bottom: 6px !important; }
 }
 
 /* Broader stacking breakpoint to cover many Android device widths */
 @media (max-width: 560px) {
-  .search-bar { flex-direction: column; align-items: stretch; max-width: 92%; padding: 0.5rem; }
-  .search-bar input { width: 100%; padding: 0.7rem 0.9rem; font-size: 0.95rem; }
-  .search-bar button { width: 100%; margin-top: 8px; padding: 0.7rem; }
+  .search-bar { flex-wrap: wrap; align-items: center; max-width: 100%; padding: 0.5rem; }
+  .search-bar input { flex: 1 1 100%; width: 100%; padding: 0.7rem 0.9rem; font-size: 0.95rem; }
+  .search-bar select { flex: 1 1 calc(50% - 0.5rem); width: auto; min-width: 140px; }
+  .jobs-page-header .search-bar select { flex: 1 1 calc(33.333% - 0.5rem) !important; width: auto !important; min-width: 120px !important; }
+  .search-bar button { flex: 1 1 100%; width: 100%; margin-top: 8px; padding: 0.7rem; }
   .search-bar span { margin-bottom: 6px; }
 }
 
@@ -1078,7 +1111,8 @@ footer a { color: var(--accent); text-decoration: none; }
     font-size: 0.9rem;
   }
   .search-bar select {
-    display: none !important;
+    flex: 1 1 100%;
+    width: 100%;
   }
   .search-bar button {
     padding: 0.7rem 1.2rem;
@@ -1641,3 +1675,413 @@ body.dark-mode #msgBadge {
   box-shadow: 0 0 0 3px rgba(255,215,0,0.4), 0 0 10px rgba(255,215,0,0.6) !important;
 }
 body.dark-mode #nav-messages:hover { background: rgba(77,121,255,0.15); }
+
+/* ===== MOBILE SEARCH BAR FIX ===== */
+@media (max-width: 600px) {
+  .search-bar {
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+    gap: 4px;
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  .search-bar input {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.5rem;
+    min-width: 0;
+    flex: 1;
+  }
+  .search-bar select {
+    font-size: 0.75rem;
+    padding: 0.45rem 0.3rem;
+    max-width: 90px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .search-bar button {
+    font-size: 0.78rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .hero {
+    padding: 2.5rem 1rem 2rem;
+    border-radius: 0;
+  }
+  .hero h1 {
+    font-size: clamp(1.5rem, 6vw, 2.2rem);
+    margin-bottom: 0.75rem;
+  }
+  .hero p {
+    font-size: 0.9rem;
+    margin: 0 auto 1.25rem;
+  }
+}
+
+/* ===== JOBS PAGE SEARCH BAR MOBILE FIX ===== */
+@media (max-width: 600px) {
+  .jobs-page-header .search-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 5px;
+    max-width: 100%;
+  }
+  .jobs-page-header .search-bar input {
+    flex: 1 1 100%;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.6rem;
+    min-width: 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+  .jobs-page-header .search-bar select {
+    flex: 1 1 30%;
+    font-size: 0.78rem;
+    padding: 0.45rem 0.4rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    min-width: 0;
+  }
+  .jobs-page-header .search-bar > span {
+    display: none;
+  }
+  .jobs-page-header {
+    padding: 2rem 1rem;
+  }
+  .jobs-page-content h1 {
+    font-size: 1.5rem;
+  }
+  .jobs-page-content p {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===== JOBS PAGE SEARCH — CLEAN VERTICAL MOBILE ===== */
+@media (max-width: 768px) {
+  .jobs-page-header .search-bar {
+    flex-direction: column !important;
+    background: #fff !important;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.14) !important;
+    padding: 0.95rem 1rem !important;
+    gap: 10px !important;
+    border-radius: 28px !important;
+    max-width: 100% !important;
+  }
+  .jobs-page-header .search-bar > span {
+    display: none !important;
+  }
+  .jobs-page-header .search-bar input,
+  .jobs-page-header .search-bar select {
+    width: 100% !important;
+    background: transparent !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    padding: 0.85rem 1rem !important;
+    font-size: 0.9rem !important;
+    color: var(--text) !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  .jobs-page-header .search-bar button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.75rem !important;
+    font-size: 0.95rem !important;
+    border-radius: 10px !important;
+  }
+  /* Also fix home hero search bar */
+  .hero .search-bar {
+    flex-direction: column !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    gap: 8px !important;
+    border-radius: 0 !important;
+  }
+  .hero .search-bar > span {
+    display: none !important;
+  }
+  .hero .search-bar input,
+  .hero .search-bar select {
+    width: 100% !important;
+    background: rgba(255,255,255,0.95) !important;
+    border-radius: 10px !important;
+    border: none !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem !important;
+    color: var(--text) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+  }
+  .hero .search-bar button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.75rem !important;
+    border-radius: 10px !important;
+  }
+}
+
+/* ===== FINAL MOBILE SEARCH FIX ===== */
+@media (max-width: 768px) {
+  /* Kill the white blob */
+  .search-bar {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    max-width: 100% !important;
+    align-items: center !important;
+  }
+  /* Search input — full width first row */
+  .search-bar input {
+    flex: 1 1 100% !important;
+    background: rgba(255,255,255,0.95) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    padding: 0.65rem 0.9rem !important;
+    font-size: 0.88rem !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    color: #1A1A1A !important;
+  }
+  /* Dropdowns — side by side second row */
+  .search-bar select {
+    flex: 1 1 28% !important;
+    background: rgba(255,255,255,0.95) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    padding: 0.55rem 0.4rem !important;
+    font-size: 0.75rem !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    color: #1A1A1A !important;
+    min-width: 0 !important;
+  }
+  /* Button — full width last row */
+  .search-bar .btn {
+    flex: 1 1 100% !important;
+    justify-content: center !important;
+    padding: 0.7rem !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+  }
+  /* Hide magnifying glass span */
+  .search-bar > span:first-child {
+    display: none !important;
+  }
+}
+
+/* ===== NUCLEAR MOBILE SEARCH FIX ===== */
+@media (max-width: 768px) {
+  .search-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    gap: 5px !important;
+    align-items: center !important;
+  }
+  .search-bar > span:first-child { display: none !important; }
+  .search-bar #searchSuggestions,
+  .search-bar > div { display: none !important; }
+  .search-bar input {
+    flex: 2 !important;
+    min-width: 0 !important;
+    height: 38px !important;
+    background: rgba(255,255,255,0.95) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0 0.6rem !important;
+    font-size: 0.78rem !important;
+    color: #1A1A1A !important;
+    box-shadow: none !important;
+  }
+  .search-bar select {
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 38px !important;
+    background: rgba(255,255,255,0.95) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0 0.2rem !important;
+    font-size: 0.68rem !important;
+    color: #1A1A1A !important;
+    box-shadow: none !important;
+  }
+  .search-bar .btn {
+    flex: 0 0 auto !important;
+    height: 38px !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.78rem !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ===== JOBS PAGE SEARCH — FINAL MOBILE OVERRIDE ===== */
+@media (max-width: 768px) {
+  .jobs-page-header .search-bar {
+    background: #fff !important;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.14) !important;
+    border-radius: 28px !important;
+    padding: 0.95rem 1rem !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    max-width: 100% !important;
+  }
+  .jobs-page-header .search-bar input,
+  .jobs-page-header .search-bar select {
+    background: transparent !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ===== MOBILE SEARCH — separate clean element ===== */
+.mobile-search { display: none; }
+.desktop-search { display: flex; }
+
+@media (max-width: 768px) {
+  .desktop-search { display: none !important; }
+  .mobile-search {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .mobile-search input {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: #1A1A1A;
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .mobile-search select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0.4rem;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: #1A1A1A;
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+}
+
+/* ===== MOBILE SEARCH — separate clean element ===== */
+.mobile-search { display: none; }
+.desktop-search { display: flex; }
+
+@media (max-width: 768px) {
+  .desktop-search { display: none !important; }
+  .mobile-search {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    padding: 0 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .mobile-search input {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: #1A1A1A;
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .mobile-search .mob-filters {
+    display: flex;
+    gap: 6px;
+  }
+  .mobile-search select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0.3rem;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    color: #1A1A1A;
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+}
+
+/* ===== HERO SEARCH BAR — wider, bigger ===== */
+.hero .search-bar {
+  max-width: 750px !important;
+  padding: 8px !important;
+  gap: 6px !important;
+}
+.hero .search-bar input {
+  font-size: 1rem !important;
+  padding: 0.7rem 1rem !important;
+  min-width: 0 !important;
+  flex: 2 !important;
+}
+.hero .search-bar select {
+  font-size: 0.9rem !important;
+  padding: 0.7rem 0.5rem !important;
+  min-width: 140px !important;
+  flex-shrink: 0 !important;
+}
+.hero .search-bar .btn {
+  padding: 0.7rem 1.5rem !important;
+  font-size: 0.95rem !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-100%); opacity: 0; }
+}
+
+/* ===== DARK MODE & LANG BUTTONS — better visibility ===== */
+#contrastToggleBtn,
+#langToggleBtn {
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.6) !important;
+  background: rgba(255,255,255,0.12) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+}
+#contrastToggleBtn:hover,
+#langToggleBtn:hover {
+  background: rgba(255,255,255,0.25) !important;
+  border-color: #fff !important;
+}

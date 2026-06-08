@@ -19,6 +19,49 @@
   body.high-contrast .nav-links a { color: #d7e6ff !important; }
   body.high-contrast .hero p { color: #c5dbff !important; }
   body.high-contrast .form-group input, body.high-contrast .form-group select, body.high-contrast .form-group textarea { background: #0b2a6c !important; color: #eff3ff !important; border-color: #4d82ff !important; }
+  /* Unified search bar — replaces old desktop/mobile split */
+  .mobile-search {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .mobile-search input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.4);
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .mobile-search input::placeholder { color: rgba(255,255,255,0.7); }
+  .mob-filters {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .mobile-search select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.65rem 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.4);
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .mobile-search select option { background: #003399; color: #fff; }
 </style>
 </head>
 <body>
@@ -48,7 +91,7 @@
 
 <!-- NAVBAR -->
 <nav>
-  <div class="logo" onclick="showPage('home')" style="cursor:pointer;">Bamenda<span>Connect</span></div>
+  <div class="logo" onclick="showPage('home')" style="cursor:pointer;"><img src="{% static 'jobs/logo.png' %}" alt="Bamenda Connect" class="logo-img"></div>
   <div class="nav-links">
     <a href="#" onclick="showPage('jobs')" class="hide-mobile" id="nav-jobs" data-i18n="nav_jobs">Browse Jobs</a>
     <a href="#" onclick="showPage('postjob')" class="hide-mobile" id="nav-postjob" data-i18n="nav_postjob">Post a Job</a>
@@ -118,10 +161,10 @@
     <div class="hero-overlay"></div>
     <h1 data-i18n="hero_title">Find Your Next Job<br>in <span>Bamenda</span></h1>
     <p data-i18n="hero_sub">Connecting local talent with local employers. Your career starts right here in your community.</p>
-    <div class="search-bar">
-      <span style="padding: 0.5rem 0.5rem 0.5rem 0.75rem; color:#9bb5a4; font-size:1rem;"><i class="fa-solid fa-magnifying-glass"></i></span>
-      <input type="text" data-i18n-placeholder="search_placeholder" placeholder="Search jobs, companies, skills…" id="homeSearch">
-      <select id="heroLocFilter" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#555;padding:0.5rem 0.4rem;background:#fff;border-radius:8px;min-width:110px;">
+    <div class="search-bar" style="max-width:700px;margin:0 auto;padding:8px;gap:6px;">
+      <span style="padding: 0.5rem 0.5rem 0.5rem 0.75rem; color:#9bb5a4; font-size:1.1rem;"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" data-i18n-placeholder="search_placeholder" placeholder="Search jobs, companies, skills…" id="homeSearch" style="font-size:1rem;padding:0.6rem 0.75rem;">
+      <select id="heroLocFilter" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:#555;padding:0.6rem 0.5rem;background:#fff;border-radius:8px;min-width:130px;">
         <option value="">All Areas</option>
         <option>Mile 4</option>
         <option>Mile 2</option>
@@ -144,7 +187,7 @@
         <option>Pinyin</option>
         <option>Bali</option>
       </select>
-      <button class="btn btn-primary" onclick="doSearch()" data-i18n="search_btn">Search Jobs</button>
+      <button class="btn btn-primary" onclick="doSearch()" data-i18n="search_btn" style="padding:0.65rem 1.5rem;font-size:0.95rem;">Search Jobs</button>
     </div>
   </div>
 
@@ -328,76 +371,33 @@
     <div class="jobs-page-content">
       <h1 style="font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem;" data-i18n="jobs_title">Browse All Jobs</h1>
       <p style="color:#c8d5f5; margin-bottom:1.25rem;" data-i18n="jobs_sub">Opportunities across Bamenda Metropolitan Area</p>
-      <div class="search-bar" style="max-width:550px; margin:0 auto;">
-        <span style="padding:0.5rem 0.5rem 0.5rem 0.75rem; color:#9bb5a4;"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <input type="text" placeholder="Job title, skill, company…" id="jobSearch" oninput="filterJobs()" autocomplete="off">
-        <div id="searchSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);z-index:50;max-height:200px;overflow-y:auto;"></div>
-        <select id="catFilter" onchange="filterJobs()" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);padding:0.5rem;background:#fff;border-radius:8px;">
-          <option value="">All Categories</option>
-          <option>Agriculture</option>
-          <option>Education</option>
-          <option>Health</option>
-          <option>Construction</option>
-          <option>Trade</option>
-          <option>Technology</option>
-        </select>
-        <select id="locFilter" onchange="filterJobs()" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);padding:0.5rem;background:#fff;border-radius:8px;">
-          <option value="">All Areas</option>
-          <option>Mile 4</option>
-          <option>Mile 2</option>
-          <option>Mile 1</option>
-          <option>Commercial Avenue</option>
-          <option>Up Station</option>
-          <option>Nkwen</option>
-          <option>Ntarikon</option>
-          <option>Cow Street</option>
-          <option>Food Market</option>
-          <option>Bamenda Town</option>
-          <option>Bambili</option>
-          <option>Bambui</option>
-          <option>Mankon</option>
-          <option>Bafut</option>
-          <option>Ndop</option>
-          <option>Wum</option>
-          <option>Tubah</option>
-          <option>Akum</option>
-          <option>Pinyin</option>
-          <option>Bali</option>
-        </select>
-        <select id="typeFilter" onchange="filterJobs()" style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);padding:0.5rem;background:#fff;border-radius:8px;">
-          <option value="">All Types</option>
-          <option>Full-time</option>
-          <option>Part-time</option>
-          <option>Contract</option>
-          <option>Seasonal</option>
-          <option>Volunteer</option>
-        </select>
-      </div>
-      <div class="filter-chips">
-        <div class="chip-group">
-          <span class="chip-label">Category:</span>
-          <button class="chip active" data-filter="cat" data-value="">All</button>
-          <button class="chip" data-filter="cat" data-value="Agriculture">Agriculture</button>
-          <button class="chip" data-filter="cat" data-value="Education">Education</button>
-          <button class="chip" data-filter="cat" data-value="Health">Health</button>
-          <button class="chip" data-filter="cat" data-value="Technology">Technology</button>
-        </div>
-        <div class="chip-group">
-          <span class="chip-label">Location:</span>
-          <button class="chip active" data-filter="loc" data-value="">All</button>
-          <button class="chip" data-filter="loc" data-value="Mile 4">Mile 4</button>
-          <button class="chip" data-filter="loc" data-value="Mile 2">Mile 2</button>
-          <button class="chip" data-filter="loc" data-value="Commercial Avenue">Commercial</button>
-          <button class="chip" data-filter="loc" data-value="Bamenda Town">Town</button>
-        </div>
-        <div class="chip-group">
-          <span class="chip-label">Type:</span>
-          <button class="chip active" data-filter="type" data-value="">All</button>
-          <button class="chip" data-filter="type" data-value="Full-time">Full-time</button>
-          <button class="chip" data-filter="type" data-value="Part-time">Part-time</button>
-          <button class="chip" data-filter="type" data-value="Contract">Contract</button>
+      <!-- MOBILE SEARCH -->
+      <div class="mobile-search">
+        <input type="text" placeholder="Job title, skill, company…" id="jobSearchMob" oninput="filterJobsMobile()" autocomplete="off">
+        <div class="mob-filters">
+          <select id="catFilterMob" onchange="filterJobsMobile()">
+            <option value="">All Categories</option>
+            <option>Agriculture</option><option>Education</option><option>Health</option>
+            <option>Construction</option><option>Trade</option><option>Technology</option>
+          </select>
+          <select id="locFilterMob" onchange="filterJobsMobile()">
+            <option value="">All Areas</option>
+            <option>Mile 4</option><option>Mile 2</option><option>Mile 1</option>
+            <option>Commercial Avenue</option><option>Up Station</option><option>Nkwen</option>
+            <option>Ntarikon</option><option>Cow Street</option><option>Food Market</option>
+            <option>Bamenda Town</option><option>Bambili</option><option>Bambui</option>
+            <option>Mankon</option><option>Bafut</option><option>Ndop</option>
+            <option>Wum</option><option>Tubah</option><option>Akum</option>
+            <option>Pinyin</option><option>Bali</option>
+          </select>
+          <select id="typeFilterMob" onchange="filterJobsMobile()">
+            <option value="">All Types</option>
+            <option>Full-time</option><option>Part-time</option><option>Contract</option>
+            <option>Seasonal</option><option>Volunteer</option>
+          </select>
         </div>
       </div>
+
     </div>
   </div>
   <div class="section">
@@ -820,7 +820,7 @@
         </div>
       </div>
       <div style="background:var(--primary-light); border-radius:10px; padding:1.25rem; text-align:center;">
-        <p style="font-size:0.9rem; color:var(--text);"><i class="fa-solid fa-envelope" style="color:var(--primary);"></i> &nbsp;<strong>info@bamendaconnect.cm</strong> &nbsp;|&nbsp; <i class="fa-solid fa-phone" style="color:var(--primary);"></i> &nbsp;<strong>+237 671 109 256</strong></p>
+        <p style="font-size:0.9rem; color:var(--text);"><i class="fa-solid fa-envelope" style="color:var(--primary);"></i> &nbsp;<strong>bamendaconnect@gmail.com</strong> &nbsp;|&nbsp; <i class="fa-solid fa-phone" style="color:var(--primary);"></i> &nbsp;<strong>+237 671 109 256</strong></p>
       </div>
     </div>
   </div>
@@ -845,7 +845,7 @@
         </div>
         <div style="text-align:center; padding:1rem; background:var(--bg); border-radius:10px;">
           <i class="fa-solid fa-envelope" style="font-size:1.5rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
-          <p style="font-size:0.85rem; font-weight:600;">info@bamendaconnect.cm</p>
+          <p style="font-size:0.85rem; font-weight:600;">bamendaconnect@gmail.com</p>
           <p style="font-size:0.78rem; color:var(--muted);">Reply within 24 hours</p>
         </div>
         <div style="text-align:center; padding:1rem; background:var(--bg); border-radius:10px;">
@@ -917,7 +917,7 @@
       <p style="margin-bottom:0.75rem;"><strong>6.2</strong> All payments are processed exclusively through MTN Mobile Money and Orange Money. By making a payment, you confirm that you are the authorized user of the mobile money account used for the transaction.</p>
       <p style="margin-bottom:0.75rem;"><strong>6.3</strong> All fees paid to Bamenda Connect are non-refundable once the corresponding service has been activated. This includes job posting fees once a listing has been published and account activation fees once access has been granted.</p>
       <p style="margin-bottom:0.75rem;"><strong>6.4</strong> Bamenda Connect reserves the right to modify its fee structure at any time. Any changes to fees will be communicated to users with reasonable advance notice and will not affect services already paid for.</p>
-      <p style="margin-bottom:1.5rem;"><strong>6.5</strong> In the event of a technical error that results in a duplicate payment, users should contact Bamenda Connect at info@bamendaconnect.cm within 7 days of the transaction to request a review and potential refund of the duplicate charge.</p>
+      <p style="margin-bottom:1.5rem;"><strong>6.5</strong> In the event of a technical error that results in a duplicate payment, users should contact Bamenda Connect at bamendaconnect@gmail.com within 7 days of the transaction to request a review and potential refund of the duplicate charge.</p>
 
       <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">7. Intellectual Property Rights</h3>
       <p style="margin-bottom:0.75rem;"><strong>7.1</strong> All content on the Bamenda Connect Platform, including but not limited to text, graphics, logos, images, software, and the overall design and layout of the Platform, is the exclusive property of Bamenda Connect and is protected by applicable intellectual property laws.</p>
@@ -928,7 +928,7 @@
       <p style="margin-bottom:0.75rem;"><strong>8.1</strong> Bamenda Connect is committed to protecting the privacy and personal data of its users. We collect, process, and store personal data in accordance with applicable Cameroonian data protection laws and regulations.</p>
       <p style="margin-bottom:0.75rem;"><strong>8.2</strong> Personal data collected by Bamenda Connect includes, but is not limited to, names, email addresses, phone numbers, employment history, and payment information. This data is used solely for the purpose of operating the Platform and providing services to users.</p>
       <p style="margin-bottom:0.75rem;"><strong>8.3</strong> Bamenda Connect will not sell, rent, or otherwise transfer your personal data to third parties without your explicit consent, except as required by law or as necessary to provide the services of the Platform.</p>
-      <p style="margin-bottom:0.75rem;"><strong>8.4</strong> Users have the right to access, correct, and request the deletion of their personal data held by Bamenda Connect. To exercise these rights, please contact us at info@bamendaconnect.cm.</p>
+      <p style="margin-bottom:0.75rem;"><strong>8.4</strong> Users have the right to access, correct, and request the deletion of their personal data held by Bamenda Connect. To exercise these rights, please contact us at bamendaconnect@gmail.com.</p>
       <p style="margin-bottom:1.5rem;"><strong>8.5</strong> Bamenda Connect implements appropriate technical and organizational measures to protect personal data against unauthorized access, loss, or destruction. However, no method of data transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
 
       <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">9. Prohibited Conduct</h3>
@@ -954,7 +954,7 @@
 
       <h3 style="color:var(--primary); margin-bottom:0.75rem; font-size:1.1rem;">12. Contact Information</h3>
       <p style="margin-bottom:0.75rem;">If you have any questions, concerns, or complaints regarding these Terms and Conditions or the operation of the Bamenda Connect Platform, please contact us through any of the following channels:</p>
-      <p style="margin-bottom:0.5rem;"><strong>Email:</strong> info@bamendaconnect.cm</p>
+      <p style="margin-bottom:0.5rem;"><strong>Email:</strong> bamendaconnect@gmail.com</p>
       <p style="margin-bottom:0.5rem;"><strong>Phone:</strong> +237 671 109 256</p>
       <p style="margin-bottom:0.5rem;"><strong>Address:</strong> Bamenda, Northwest Region, Cameroon</p>
       <p style="margin-bottom:1.5rem;"><strong>Business Hours:</strong> Monday to Friday, 8:00 AM to 6:00 PM (WAT)</p>
@@ -1074,27 +1074,23 @@
           <img src="{% static 'jobs/MTN.jpg' %}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
           <img src="{% static 'jobs/orange.jpg' %}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
         </div>
-        <p style="font-size:0.85rem; color:var(--muted);">Select your payment method and complete the payment.</p>
+        <p style="font-size:0.85rem; color:var(--muted);">Enter your phone number to complete payment via MTN or Orange Money.</p>
       </div>
       <div class="form-group" style="text-align:left;">
-        <label data-i18n="pay_gate_method">Payment Method</label>
-        <select id="payGateMethod">
+        <label>Your Phone Number (9 digits)</label>
+        <div class="phone-prefix">
+          <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
+          <input type="tel" id="payGatePhone" placeholder="6XX XXX XXX" maxlength="9" pattern="[0-9]{9}" oninput="validatePhoneInput(this)">
+        </div>
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label>Payment Method</label>
+        <select id="payGateMethod" style="width:100%; padding:0.7rem 0.9rem; border:1.5px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.9rem; color:var(--text); background:var(--bg); outline:none;">
           <option value="mtn">MTN Mobile Money</option>
           <option value="orange">Orange Money</option>
         </select>
       </div>
-      <div class="form-group" style="text-align:left;">
-        <label>Your Phone Number</label>
-        <div class="phone-prefix">
-          <span class="prefix"><i class="fa-solid fa-phone"></i> +237</span>
-          <input type="tel" id="payGatePhone" placeholder="6XX XXX XXX">
-        </div>
-      </div>
-      <div class="form-group" style="text-align:left;">
-        <label>Transaction ID</label>
-        <input type="text" id="payGateTxId" placeholder="Enter transaction ID" style="width:100%; padding:0.85rem; border:1px solid var(--border); border-radius:10px;">
-      </div>
-      <button class="btn btn-primary" style="width:100%; padding:0.85rem; font-size:1rem; justify-content:center;" onclick="submitPaymentGate()" data-i18n="pay_gate_btn">Confirm Payment & Continue</button>
+      <button class="btn btn-primary" style="width:100%; padding:0.85rem; font-size:1rem; justify-content:center;" onclick="submitPaymentGate()" data-i18n="pay_gate_btn">Pay Now</button>
     </div>
   </div>
 </div>
@@ -1303,6 +1299,175 @@
   </div>
 </div>
 
+<!-- WELCOME MODAL -->
+<div class="modal-bg" id="welcomeModal" style="z-index:9999;background:rgba(0,0,0,0.3) !important;backdrop-filter:blur(5px);">
+  <div class="modal" style="max-width:700px;background:linear-gradient(135deg,rgba(0,51,153,0.85) 0%,rgba(10,77,179,0.85) 50%,rgba(26,93,184,0.85) 100%);color:#fff;border:none;box-shadow:0 20px 80px rgba(0,51,153,0.4);position:relative;overflow-y:scroll;max-height:88vh;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:2px solid rgba(197,160,89,0.4);">
+    <!-- Animated gradient background -->
+    <div style="position:absolute;inset:0;opacity:0.15;background:repeating-linear-gradient(45deg,transparent,transparent 20px,#C5A059 20px,#C5A059 40px);animation:slideBackground 15s linear infinite;"></div>
+
+    <!-- Floating orbs for depth -->
+    <div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(197,160,89,0.3) 0%,transparent 70%);border-radius:50%;animation:float 6s ease-in-out infinite;"></div>
+    <div style="position:absolute;bottom:-80px;left:-80px;width:250px;height:250px;background:radial-gradient(circle,rgba(197,160,89,0.2) 0%,transparent 70%);border-radius:50%;animation:float 8s ease-in-out infinite 1s;"></div>
+
+    <style>
+      @keyframes slideBackground { 0% { transform: translateX(-100px); } 100% { transform: translateX(100px); } }
+      @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+      @keyframes fadeInDown { from { opacity:0;transform:translateY(-30px); } to { opacity:1;transform:translateY(0); } }
+      @keyframes slideInUp { from { opacity:0;transform:translateY(40px); } to { opacity:1;transform:translateY(0); } }
+      @keyframes scaleIn { from { opacity:0;transform:scale(0.8); } to { opacity:1;transform:scale(1); } }
+      @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+      @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+      @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+      #welcomeModal { display: none !important; }
+      #welcomeModal.open { display: flex !important; animation: fadeIn 0.5s ease-out; }
+
+      /* Hide scrollbar but keep scrolling functional */
+      .modal::-webkit-scrollbar {
+        width: 0px;
+      }
+      .modal {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+      }
+
+      .welcome-logo { animation: pulse 2s ease-in-out infinite; }
+      .welcome-title { animation: slideInUp 0.8s ease-out 0.1s both; }
+      .welcome-subtitle { animation: slideInUp 0.8s ease-out 0.2s both; }
+      .welcome-box { animation: slideInUp 0.8s ease-out 0.3s both; }
+      .welcome-tips { animation: slideInUp 0.8s ease-out 0.4s both; }
+      .welcome-buttons { animation: slideInUp 0.8s ease-out 0.5s both; }
+
+      .btn-welcome { position: relative; overflow: hidden; transition: all 0.3s ease; }
+      .btn-welcome::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: rgba(255,255,255,0.2); animation: shimmer 0.6s ease-in-out; }
+      .btn-welcome:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(197,160,89,0.4); }
+
+      .tip-item { animation: slideInUp 0.8s ease-out both; }
+      .tip-item:nth-child(1) { animation-delay: 0.35s; }
+      .tip-item:nth-child(2) { animation-delay: 0.42s; }
+      .tip-item:nth-child(3) { animation-delay: 0.49s; }
+      .tip-item:nth-child(4) { animation-delay: 0.56s; }
+      .tip-item:nth-child(5) { animation-delay: 0.63s; }
+
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+
+    <div style="text-align:center;padding:2.5rem 2rem;position:relative;z-index:2;">
+      <!-- Logo instead of rocket -->
+      <div class="welcome-logo" style="margin-bottom:2rem;display:inline-block;max-width:200px;height:auto;">
+        <img src="{% static 'jobs/logo.png' %}" alt="Bamenda Connect" style="max-width:100%;height:auto;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4));"/>
+      </div>
+
+      <!-- Main heading -->
+      <h1 class="welcome-title" style="font-family:'Playfair Display',serif;font-size:2.8rem;margin-bottom:0.5rem;font-weight:900;line-height:1.1;color:#fff;letter-spacing:-0.5px;">
+        Welcome to<br><span style="background:linear-gradient(90deg,#C5A059,#FFE033);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Bamenda Connect</span>
+      </h1>
+
+      <!-- Tagline -->
+      <p class="welcome-subtitle" style="font-size:1.2rem;color:#C8D5F5;margin-bottom:2rem;line-height:1.6;font-weight:500;">
+        Your Job Finding Platform
+      </p>
+
+
+      <!-- CTA buttons with professional styling -->
+      <div class="welcome-buttons" style="display:flex;gap:0.8rem;flex-direction:column;margin-bottom:0.5rem;">
+        <button class="btn-welcome" style="width:100%;padding:1rem;font-size:1rem;font-weight:700;justify-content:center;background:linear-gradient(135deg,#C5A059,#FFE033);border:none;color:#001642;border-radius:14px;cursor:pointer;transition:all 0.3s ease;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 28px rgba(197,160,89,0.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 16px rgba(197,160,89,0.3)'" onclick="closeWelcomeModal();showPage('jobs')">
+          <i class="fa-solid fa-search" style="margin-right:0.6rem;"></i> Browse All Jobs
+        </button>
+        <button class="btn-welcome" style="width:100%;padding:1rem;font-size:1rem;font-weight:700;justify-content:center;background:transparent;border:2px solid #C5A059;color:#C5A059;border-radius:14px;cursor:pointer;transition:all 0.3s ease;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;" onmouseover="this.style.background='rgba(197,160,89,0.15)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='transparent';this.style.transform='translateY(0)'" onclick="closeWelcomeModal();showPage('register')">
+          <i class="fa-solid fa-user-plus" style="margin-right:0.6rem;"></i> Create Your Account
+        </button>
+        <button class="btn-welcome" style="width:100%;padding:1rem;font-size:1rem;font-weight:700;justify-content:center;background:transparent;border:2px solid rgba(255,255,255,0.3);color:#C8D5F5;border-radius:14px;cursor:pointer;transition:all 0.3s ease;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;" onmouseover="this.style.borderColor='rgba(255,255,255,0.6)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';this.style.transform='translateY(0)'" onclick="closeWelcomeModal()">
+          <i class="fa-solid fa-arrow-right" style="margin-right:0.6rem;"></i> Skip Welcome
+        </button>
+      </div>
+
+  </div>
+</div>
+    <!-- Animated gradient background -->
+    <div style="position:absolute;inset:0;opacity:0.15;background:repeating-linear-gradient(45deg,transparent,transparent 20px,#C5A059 20px,#C5A059 40px);animation:slideBackground 15s linear infinite;"></div>
+
+    <!-- Floating orbs for depth -->
+    <div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(197,160,89,0.3) 0%,transparent 70%);border-radius:50%;animation:float 6s ease-in-out infinite;"></div>
+    <div style="position:absolute;bottom:-80px;left:-80px;width:250px;height:250px;background:radial-gradient(circle,rgba(197,160,89,0.2) 0%,transparent 70%);border-radius:50%;animation:float 8s ease-in-out infinite 1s;"></div>
+
+    <style>
+      @keyframes slideBackground { 0% { transform: translateX(-100px); } 100% { transform: translateX(100px); } }
+      @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+      @keyframes fadeInDown { from { opacity:0;transform:translateY(-30px); } to { opacity:1;transform:translateY(0); } }
+      @keyframes slideInUp { from { opacity:0;transform:translateY(40px); } to { opacity:1;transform:translateY(0); } }
+      @keyframes scaleIn { from { opacity:0;transform:scale(0.8); } to { opacity:1;transform:scale(1); } }
+      @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+      @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+      @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+      #welcomeModal { display: none !important; background: rgba(0,0,0,0.8) !important; }
+      #welcomeModal.open { display: flex !important; animation: fadeIn 0.5s ease-out; }
+      #welcomeModal .welcome-content { position:relative;z-index:1;animation:fadeInDown 0.8s ease-out; }
+
+      .welcome-icon { animation: pulse 2s ease-in-out infinite; }
+      .welcome-title { animation: slideInUp 0.8s ease-out 0.1s both; }
+      .welcome-subtitle { animation: slideInUp 0.8s ease-out 0.2s both; }
+      .welcome-box { animation: slideInUp 0.8s ease-out 0.3s both; }
+      .welcome-tips { animation: slideInUp 0.8s ease-out 0.4s both; }
+      .welcome-buttons { animation: slideInUp 0.8s ease-out 0.5s both; }
+
+      .btn-welcome { position: relative; overflow: hidden; transition: all 0.3s ease; }
+      .btn-welcome::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: rgba(255,255,255,0.2); animation: shimmer 0.6s ease-in-out; }
+      .btn-welcome:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(197,160,89,0.4); }
+
+      .tip-item { animation: slideInUp 0.8s ease-out both; }
+      .tip-item:nth-child(1) { animation-delay: 0.35s; }
+      .tip-item:nth-child(2) { animation-delay: 0.42s; }
+      .tip-item:nth-child(3) { animation-delay: 0.49s; }
+
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+
+    <div class="welcome-content" style="text-align:center;padding:4rem 2.5rem;position:relative;z-index:2;">
+      <!-- Icon with animation -->
+      <div class="welcome-icon" style="font-size:5rem;margin-bottom:1.75rem;display:inline-block;background:linear-gradient(135deg,#C5A059,#FFE033);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+        <i class="fa-solid fa-rocket"></i>
+      </div>
+
+      <!-- Main heading -->
+      <h1 class="welcome-title" style="font-family:'Playfair Display',serif;font-size:2.5rem;margin-bottom:0.5rem;font-weight:900;line-height:1.1;color:#fff;letter-spacing:-0.5px;">
+        Welcome to<br><span style="background:linear-gradient(90deg,#C5A059,#FFE033);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Bamenda Connect</span>
+      </h1>
+
+      <!-- Tagline -->
+      <p class="welcome-subtitle" style="font-size:1.15rem;color:#C8D5F5;margin-bottom:2.5rem;line-height:1.6;font-weight:500;">
+        Your Job Finding Platform
+      </p>
+
+
+      <!-- CTA buttons with professional styling -->
+      <div class="welcome-buttons" style="display:flex;gap:1rem;flex-direction:column;">
+        <button class="btn-welcome" style="width:100%;padding:1.1rem;font-size:1.05rem;font-weight:700;justify-content:center;background:linear-gradient(135deg,#C5A059,#FFE033);border:none;color:#001642;border-radius:14px;cursor:pointer;transition:all 0.3s ease;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 28px rgba(197,160,89,0.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 16px rgba(197,160,89,0.3)'" onclick="closeWelcomeModal();showPage('jobs')">
+          <i class="fa-solid fa-search" style="margin-right:0.6rem;"></i> Browse All Jobs
+        </button>
+        <button class="btn-welcome" style="width:100%;padding:1.1rem;font-size:1.05rem;font-weight:700;justify-content:center;background:transparent;border:2px solid #C5A059;color:#C5A059;border-radius:14px;cursor:pointer;transition:all 0.3s ease;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;" onmouseover="this.style.background='rgba(197,160,89,0.15)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='transparent';this.style.transform='translateY(0)'" onclick="closeWelcomeModal();showPage('register')">
+          <i class="fa-solid fa-user-plus" style="margin-right:0.6rem;"></i> Create Your Account
+        </button>
+        <button class="btn-welcome" style="width:100%;padding:1.1rem;font-size:1.05rem;font-weight:700;justify-content:center;background:transparent;border:2px solid rgba(255,255,255,0.3);color:#C8D5F5;border-radius:14px;cursor:pointer;transition:all 0.3s ease;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;" onmouseover="this.style.borderColor='rgba(255,255,255,0.6)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';this.style.transform='translateY(0)'" onclick="closeWelcomeModal()">
+          <i class="fa-solid fa-arrow-right" style="margin-right:0.6rem;"></i> Skip Welcome
+        </button>
+      </div>
+
+      <!-- Close hint -->
+      <p style="font-size:0.85rem;color:rgba(255,255,255,0.6);margin-top:1.75rem;animation:slideInUp 0.8s ease-out 0.6s both;">
+        Press <span style="background:rgba(197,160,89,0.3);padding:0.2rem 0.6rem;border-radius:4px;font-family:monospace;font-weight:600;">Esc</span> or click outside to dismiss
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+</style>
+
 <!-- NEWSLETTER SIGNUP -->
 <div class="newsletter-section">
   <div class="newsletter-content">
@@ -1353,7 +1518,7 @@
       <div class="footer-col">
         <h4 data-i18n="footer_contact">Contact Us</h4>
         <a href="#"><i class="fa-solid fa-phone"></i> +237 671109256</a>
-        <a href="#"><i class="fa-solid fa-envelope"></i> info@bamendaconnect.cm</a>
+        <a href="#"><i class="fa-solid fa-envelope"></i> bamendaconnect@gmail.com</a>
         <a href="#"><i class="fa-solid fa-location-dot"></i> Bamenda, Northwest Region, CM</a>
       </div>
     </div>

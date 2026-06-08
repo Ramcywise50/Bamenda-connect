@@ -30,7 +30,7 @@ A local Django job marketplace for Bamenda with employer and seeker workflows, p
 
 ## Notes
 
-- Do not commit secrets or local databases. `db.sqlite3` is excluded via `.gitignore`.
+- Do not commit secrets. Database configuration now uses MySQL and should be set via environment variables.
 - Frontend logic is in `backend/jobs/static/jobs/script-backend.js`.
 - Templates are under `backend/jobs/templates/jobs/`.
 

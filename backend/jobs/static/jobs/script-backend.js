@@ -87,7 +87,20 @@ const translations = {
     story_placeholder: 'Tell us how Bamenda Connect helped you find this job...',
     submit_story: 'Submit My Story',
     log_in_to_share: 'Log in and share your success story to inspire others in the community.',
-    story_inspire: 'Your story will inspire others in the Bamenda community.'
+    story_inspire: 'Your story will inspire others in the Bamenda community.',
+    welcome_title: 'Welcome to Bamenda Connect',
+    welcome_subtitle: 'Your job finding platform',
+    welcome_role_label: 'You\'re registered as a',
+    welcome_tips_title: 'Quick Tips to Get Started',
+    welcome_tip_seeker_1: 'Browse thousands of jobs in your area',
+    welcome_tip_seeker_2: 'Set job alerts to never miss an opportunity',
+    welcome_tip_seeker_3: 'Connect directly with employers',
+    welcome_tip_employer_1: 'Post jobs and reach qualified candidates',
+    welcome_tip_employer_2: 'Review applications and manage listings',
+    welcome_tip_employer_3: 'Connect with top talent in Bamenda',
+    welcome_explore: 'Explore Jobs',
+    welcome_profile: 'Complete Your Profile',
+    welcome_close_hint: 'You can close this welcome screen anytime'
   },
   fr: {
     nav_jobs: 'Offres d\'emploi', nav_postjob: 'Publier un emploi', nav_pricing: 'Tarifs',
@@ -176,7 +189,20 @@ const translations = {
     story_placeholder: 'Dites-nous comment Bamenda Connect vous a aid\u00e9 \u00e0 trouver cet emploi...',
     submit_story: 'Soumettre mon histoire',
     log_in_to_share: 'Se connecter et partager votre histoire de succ\u00e8s pour inspirer d\'autres dans la communaut\u00e9.',
-    story_inspire: 'Votre histoire inspirera d\'autres dans la communaut\u00e9 de Bamenda.'
+    story_inspire: 'Votre histoire inspirera d\'autres dans la communaut\u00e9 de Bamenda.',
+    welcome_title: 'Bienvenue sur Bamenda Connect',
+    welcome_subtitle: 'Votre plateforme de recherche d\'emploi',
+    welcome_role_label: 'Vous êtes inscrit en tant que',
+    welcome_tips_title: 'Conseils rapides pour commencer',
+    welcome_tip_seeker_1: 'Parcourez des milliers d\'emplois dans votre région',
+    welcome_tip_seeker_2: 'Configurez des alertes emploi pour ne rien manquer',
+    welcome_tip_seeker_3: 'Connectez-vous directement avec les employeurs',
+    welcome_tip_employer_1: 'Publiez des emplois et atteignez des candidats qualifiés',
+    welcome_tip_employer_2: 'Examinez les candidatures et gérez vos annonces',
+    welcome_tip_employer_3: 'Connectez-vous avec les meilleurs talents de Bamenda',
+    welcome_explore: 'Parcourir les emplois',
+    welcome_profile: 'Compléter votre profil',
+    welcome_close_hint: 'Vous pouvez fermer cet écran de bienvenue à tout moment'
   }
 };
 
@@ -258,7 +284,6 @@ async function fetchJobsFromBackend() {
       return data.jobs;
     }
   } catch (error) {
-    console.error('Error fetching jobs:', error);
   }
   return [];
 }
@@ -290,7 +315,6 @@ async function refreshJobs() {
       renderFeaturedJobs();
     }
   } catch (e) {
-    console.error('refreshJobs error', e);
   }
 }
 
@@ -319,17 +343,26 @@ function showPage(name) {
   // Allow browsing of jobs/pricing/postjob without forcing login,
   // but prompt users to sign in before using interactive features.
   const publicPages = ['home', 'login', 'register', 'terms', 'privacy', 'jobs', 'postjob', 'pricing'];
+
   // Require login for posting jobs
   if (name === 'postjob' && (!currentUser || (currentUser && currentUser.role === 'seeker'))) {
     showAlert(document.getElementById('postAlert') || document.body, 'error', 'You must be logged in as an employer to post a job.');
     showPage('login');
     return;
   }
-  // Guard: unpaid seeker trying to access jobs
+
+  // Guard: unpaid employer trying to post a job - show payment gate
+  if (name === 'postjob' && currentUser && currentUser.role === 'employer' && !currentUser.paid) {
+    showPaymentGate();
+    return;
+  }
+
+  // Guard: unpaid seeker trying to browse/apply for jobs
   if (name === 'jobs' && currentUser && currentUser.role === 'seeker' && !currentUser.paid) {
     showPaymentGate();
     return;
   }
+
   // Guard: employer with no remaining post quota should pay before posting
   if (name === 'postjob' && currentUser && currentUser.role === 'employer') {
     const remaining = getRemainingPosts();
@@ -371,10 +404,10 @@ function showPage(name) {
         banner.style.alignItems = 'center';
       }
       banner.innerHTML = `
-        <div style="color:#6B4A00;font-weight:600;font-size:0.95rem;">Sign in to use interactive features on this page.</div>
-        <div style="display:flex;gap:0.5rem;">
-          <button class="btn btn-outline" onclick="showPage('login')">Log In</button>
-          <button class="btn btn-primary" onclick="showPage('register')">Register</button>
+        <div style="color:#001642;font-weight:600;font-size:0.95rem;">Get access to exclusive features</div>
+        <div style="display:flex;gap:0.75rem;">
+          <button class="btn btn-outline" onclick="showPage('login')">Sign In</button>
+          <button class="btn btn-primary" onclick="showPage('register')">Sign Up</button>
         </div>`;
       const pageEl = document.getElementById('page-' + name);
       if (pageEl) {
@@ -391,14 +424,17 @@ function showPage(name) {
 
 function showPaymentGate() {
   const isEmployer = currentUser && currentUser.role === 'employer';
-  const plan = isEmployer ? getEmployerPlan(pendingPaymentPlan || 'standard') : null;
-  const amount = isEmployer ? `${plan.amount.toLocaleString()} FCFA` : '500 FCFA';
+  const amount = isEmployer ? '1,000 FCFA' : '500 FCFA';
   const desc = isEmployer
-    ? `Pay <strong>${plan.amount.toLocaleString()} FCFA</strong> to activate your employer account and post up to ${plan.credits} job${plan.credits === 1 ? '' : 's'}. ${plan.description}`
+    ? `Pay <strong>1,000 FCFA</strong> to activate your employer account and post up to <strong>2 jobs</strong>. Get more credits anytime by paying again.`
     : `A one-time access fee of <strong>500 FCFA</strong> is required to browse and apply for jobs.`;
   document.getElementById('payGateTitle').textContent = isEmployer ? 'Activate Employer Account' : 'Activate Job Seeker Access';
   document.getElementById('payGateDesc').innerHTML = desc;
   document.getElementById('payGateIcon').innerHTML = isEmployer ? '<i class="fa-solid fa-building"></i>' : '<i class="fa-solid fa-magnifying-glass"></i>';
+
+  // Clear phone field
+  document.getElementById('payGatePhone').value = '';
+
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-payment').classList.add('active');
   window.scrollTo(0, 0);
@@ -406,32 +442,99 @@ function showPaymentGate() {
 
 function submitPaymentGate() {
   if (!currentUser) { showLoginPrompt(); return; }
-  const txId = document.getElementById('payGateTxId') ? document.getElementById('payGateTxId').value.trim() : '';
+
+  const phone = document.getElementById('payGatePhone').value.trim();
   const alertEl = document.getElementById('payGateAlert');
-  if (!txId) {
-    showAlert(alertEl, 'error', 'Please enter your transaction ID.');
+
+  if (!phone) {
+    showAlert(alertEl, 'error', 'Enter your phone number');
     return;
   }
-  currentUser.paid = true;
-  currentUser.payTxId = txId;
-  currentUser.payMethod = document.getElementById('payGateMethod')?.value || 'mtn';
-  currentUser.payPhone = document.getElementById('payGatePhone')?.value.trim() || currentUser.phone_number || currentUser.phone || '';
-  if (currentUser.role === 'employer') {
-    const plan = getEmployerPlan(pendingPaymentPlan || 'standard');
-    currentUser.paymentPlan = plan.name;
-    currentUser.jobCredits = plan.credits;
-    currentUser.payAmount = plan.amount;
+
+  if (!/^\d{9}$/.test(phone)) {
+    showAlert(alertEl, 'error', 'Invalid number - enter correct number');
+    return;
   }
-  if (currentUser.role === 'seeker') {
-    currentUser.payAmount = 500;
+
+  initiatePayment();
+}
+
+async function initiatePayment() {
+  if (!authToken || !currentUser) {
+    showAlert(document.getElementById('payGateAlert'), 'error', 'Please log in first.');
+    return;
   }
-  localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
-  pendingPaymentPlan = null;
-  showAlert(alertEl, 'success', '✅ Payment received! Activating your account…');
-  setTimeout(() => {
-    const dest = currentUser.role === 'employer' ? 'postjob' : 'jobs';
-    showPage(dest);
-  }, 1500);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/payment/initiate/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        subscription_type: currentUser.role === 'employer' ? 'employer' : 'seeker'
+      })
+    });
+
+    const data = await response.json();
+    if (data.status === 'success') {
+      const txId = data.transaction_id;
+      const amount = data.amount;
+
+      showAlert(document.getElementById('payGateAlert'), 'success', `Processing payment of ${amount} FCFA...`);
+
+      setTimeout(() => confirmPayment(txId), 1500);
+    } else {
+      showAlert(document.getElementById('payGateAlert'), 'error', data.message || 'Payment initiation failed.');
+    }
+  } catch (error) {
+    showAlert(document.getElementById('payGateAlert'), 'error', 'Error initiating payment.');
+  }
+}
+
+async function confirmPayment(transactionId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/payment/confirm/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        transaction_id: transactionId
+      })
+    });
+
+    const data = await response.json();
+    if (data.status === 'success') {
+      // Fetch the latest user profile to get correct payment status and posts remaining
+      const profileResponse = await fetch(`${API_BASE_URL}/auth/profile/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      const profileData = await profileResponse.json();
+      if (profileData.status === 'success') {
+        currentUser = profileData.user;
+        localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
+        updateUserBar();
+      }
+
+      showAlert(document.getElementById('payGateAlert'), 'success', '✅ Payment confirmed! Activating your account…');
+
+      setTimeout(() => {
+        const dest = currentUser.profile.role === 'employer' ? 'postjob' : 'jobs';
+        showPage(dest);
+      }, 1500);
+    } else {
+      showAlert(document.getElementById('payGateAlert'), 'error', data.message || 'Payment confirmation failed.');
+    }
+  } catch (error) {
+    showAlert(document.getElementById('payGateAlert'), 'error', 'Error confirming payment.');
+  }
 }
 
 function renderProfile() {
@@ -685,6 +788,13 @@ function closeModal() {
 // ===== APPLY MODAL =====
 function applyJob(id) {
   if (!currentUser) { showLoginPrompt(); return; }
+
+  // Seeker must be paid to apply
+  if (currentUser.role === 'seeker' && !currentUser.paid) {
+    showPaymentGate();
+    return;
+  }
+
   currentJobId = id;
   if (currentUser) {
     const names = (currentUser.name || '').split(' ');
@@ -751,7 +861,6 @@ async function applySubmit() {
       alert('Error: ' + (data.message || 'Could not submit application'));
     }
   } catch (error) {
-    console.error('Error:', error);
     alert('Error submitting application');
   }
 }
@@ -787,7 +896,6 @@ async function doLogin() {
       showAlert(alertEl, 'error', data.message || 'Invalid email or password');
     }
   } catch (error) {
-    console.error('Error:', error);
     showAlert(alertEl, 'error', 'Connection error. Check if backend is running.');
   }
 }
@@ -860,13 +968,12 @@ async function doRegister() {
         localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
         updateUserBar();
         populateNewsletterEmail();
-        showPaymentGate();
+        showPage('home');
       }
     } else {
       showAlert(alertEl, 'error', data.errors?.email?.[0] || 'Registration failed');
     }
   } catch (error) {
-    console.error('Error:', error);
     // Offline fallback — register locally with selected role
     currentUser = {
       first_name: first, last_name: last, email, phone, role: currentRole,
@@ -875,7 +982,7 @@ async function doRegister() {
     localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
     updateUserBar();
     populateNewsletterEmail();
-    showPaymentGate();
+    showPage('home');
   }
 }
 
@@ -947,27 +1054,21 @@ async function doPostJob() {
       showAlert(alertEl, 'error', data.message || 'Error posting job');
     }
   } catch (error) {
-    console.error('Error:', error);
     showAlert(alertEl, 'error', 'Connection error. Check if backend is running.');
   }
 }
 
 // ===== HELPERS =====
 function showAlert(el, type, msg) {
-  console.log('showAlert called with:', el, type, msg);
   const element = typeof el === 'string' ? document.getElementById(el) : el;
-  console.log('Element found:', element);
   if (element) {
     element.className = 'alert ' + type;
     element.textContent = msg;
     element.style.display = 'block';
-    console.log('Alert displayed');
     setTimeout(() => { 
       element.style.display = 'none'; 
-      console.log('Alert hidden');
     }, 5000);
   } else {
-    console.error('Alert element not found:', el);
   }
 }
 
@@ -1074,9 +1175,36 @@ function updateUserBar() {
 }
 
 // ===== NEWSLETTER =====
+// ===== TOP NOTIFICATION BAR =====
+function showTopNotification(message, type = 'success') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: ${type === 'success' ? '#4CAF50' : '#ff9800'};
+    color: white;
+    padding: 1rem 2rem;
+    text-align: center;
+    font-weight: 600;
+    z-index: 10000;
+    animation: slideDown 0.5s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  `;
+  notification.textContent = message;
+  document.body.insertBefore(notification, document.body.firstChild);
+
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideUp 0.5s ease';
+    setTimeout(() => notification.remove(), 500);
+  }, 5000);
+}
+
 async function subscribeNewsletter() {
-  console.log('subscribeNewsletter called');
-  
+
   // Check if user is logged in
   if (!currentUser || !authToken) {
     showAlert(document.getElementById('newsletterAlert'), 'error', 'Please log in or sign up first to subscribe to our newsletter.');
@@ -1087,7 +1215,7 @@ async function subscribeNewsletter() {
 
   const emailInput = document.getElementById('newsletterEmail');
   const email = emailInput ? emailInput.value.trim() : currentUser.email;
-  
+
   if (!email) {
     showAlert(document.getElementById('newsletterAlert'), 'error', 'Please enter a valid email address.');
     return;
@@ -1103,12 +1231,43 @@ async function subscribeNewsletter() {
     if (response.ok && data.status === 'success') {
       showAlert(document.getElementById('newsletterAlert'), 'success', data.message || 'Successfully subscribed to our newsletter!');
       if (emailInput) emailInput.value = '';
+
+      // Mark user as subscribed
+      currentUser.subscribed_newsletter = true;
+      localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
+
+      // Show top notification bar
+      showTopNotification('✅ Newsletter Subscribed! Check your email for updates.', 'success');
+
+      // Hide newsletter section after 3 seconds
+      setTimeout(() => {
+        const newsletterSection = document.querySelector('.newsletter-section');
+        if (newsletterSection) {
+          newsletterSection.style.display = 'none';
+        }
+        checkNewsletterSubscription();
+      }, 3000);
     } else {
       showAlert(document.getElementById('newsletterAlert'), 'error', data.message || 'Subscription failed. Please try again.');
     }
   } catch (error) {
-    console.error('Newsletter subscription error:', error);
     showAlert(document.getElementById('newsletterAlert'), 'error', 'Connection error. Please try again.');
+  }
+}
+
+// ===== CHECK NEWSLETTER SUBSCRIPTION STATUS =====
+function checkNewsletterSubscription() {
+  if (currentUser && currentUser.subscribed_newsletter) {
+    const newsletterSection = document.querySelector('.newsletter-section');
+    if (newsletterSection) {
+      newsletterSection.innerHTML = `
+        <div style="text-align:center;padding:3rem 2rem;">
+          <div style="font-size:3rem;color:var(--primary);margin-bottom:1rem;">✅</div>
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#fff;margin-bottom:0.5rem;">You're Already Subscribed!</h3>
+          <p style="color:#C8D5F5;font-size:0.95rem;">Thank you for subscribing to Bamenda Connect. You'll receive job updates in your inbox at ${currentUser.email || 'your email'}.</p>
+        </div>
+      `;
+    }
   }
 }
 
@@ -1134,6 +1293,7 @@ async function initApp() {
   renderFeaturedJobs();
   updateUserBar();
   populateNewsletterEmail();
+  checkNewsletterSubscription();
 
   // Ensure marquee is properly initialized for logged-in users
   if (currentUser) {
@@ -1842,9 +2002,8 @@ function useOnePost() {
 }
 
 function getRemainingPosts() {
-  const quota = getPostQuota();
-  if (!quota) return 0;
-  return quota.total - quota.used;
+  if (!currentUser || currentUser.role !== 'employer') return 0;
+  return currentUser.posts_remaining || currentUser.job_posts_remaining || 0;
 }
 
 // Update post job form with quota info
@@ -3204,46 +3363,8 @@ function initStatsBar() {
   counters.forEach(c => observer.observe(c));
 }
 
-async function loadLiveStats() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/stats/`);
-    const data = await res.json();
-    if (data.status === 'success') {
-      const map = {
-        jobs: '[data-target="124"]',
-        employers: '[data-target="58"]',
-        seekers: '[data-target="312"]',
-        hires: '[data-target="89"]'
-      };
-      if (data.jobs_count !== undefined) {
-        const el = document.querySelector('[data-target="124"]');
-        if (el) el.setAttribute('data-target', data.jobs_count);
-      }
-      if (data.employers_count !== undefined) {
-        const el = document.querySelector('[data-target="58"]');
-        if (el) el.setAttribute('data-target', data.employers_count);
-      }
-      if (data.seekers_count !== undefined) {
-        const el = document.querySelector('[data-target="312"]');
-        if (el) el.setAttribute('data-target', data.seekers_count);
-      }
-      if (data.hires_count !== undefined) {
-        const el = document.querySelector('[data-target="89"]');
-        if (el) el.setAttribute('data-target', data.hires_count);
-      }
-      if (data.avg_rating !== undefined) {
-        const ratingEl = document.getElementById('statAvgRating');
-        if (ratingEl) ratingEl.textContent = parseFloat(data.avg_rating).toFixed(1);
-      }
-    }
-  } catch {}
-  // Always init counters (uses fallback values if backend fails)
-  initStatsBar();
-}
+window.addEventListener('DOMContentLoaded', initStatsBar);
 
-window.addEventListener('DOMContentLoaded', () => {
-  loadLiveStats();
-});
 
 // ===== TESTIMONIAL CAROUSEL =====
 let testimonialIndex = 0;
@@ -5536,31 +5657,129 @@ doPostJob = async function() {
   await _origDoPostJobQuotaFinal();
 };
 
+// ===== PHONE INPUT REAL-TIME VALIDATION =====
+function validatePhoneInput(input) {
+  const phone = input.value.trim();
+  const alertEl = document.getElementById('payGateAlert');
+
+  if (phone.length === 0) {
+    // Empty - no error
+    if (alertEl) alertEl.style.display = 'none';
+  } else if (!/^\d+$/.test(phone) || phone.length < 9 || phone[0] !== '6') {
+    // Invalid - contains letters, too short, or doesn't start with 6
+    if (alertEl) {
+      alertEl.className = 'alert error';
+      alertEl.textContent = '❌ Invalid phone number';
+      alertEl.style.display = 'block';
+    }
+  } else if (phone.length === 9 && phone[0] === '6' && /^\d+$/.test(phone)) {
+    // Valid - hide error
+    if (alertEl) alertEl.style.display = 'none';
+  }
+}
+
 // ===== FIX seeker payment message =====
-submitPaymentGate = function() {
+submitPaymentGate = async function() {
   const phone = document.getElementById('payGatePhone').value.trim();
-  const method = document.getElementById('payGateMethod').value;
+  const method = document.getElementById('payGateMethod')?.value || 'mtn';
   const alertEl = document.getElementById('payGateAlert');
   const recipients = { mtn: '671109256', orange: '696500803' };
 
-  if (!phone) {
-    showAlert(alertEl, 'error', 'Invalid phone number.');
+  if (!phone || phone.length !== 9 || phone[0] !== '6' || !/^\d+$/.test(phone)) {
+    showAlert(alertEl, 'error', '❌ Invalid phone number');
     return;
   }
 
-  currentUser.paid = true;
-  currentUser.payMethod = method;
-  currentUser.payPhone = phone;
-  currentUser.payRecipient = recipients[method];
-  localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
+  if (!currentUser || !currentUser.id) {
+    showAlert(alertEl, 'error', '❌ Please log in first.');
+    return;
+  }
 
-  if (currentUser.role === 'employer') {
-    setPostQuota('standard');
-    showAlert(alertEl, 'success', '✅ Payment confirmed! You can now post 2 jobs.');
-    setTimeout(() => showPage('postjob'), 1500);
-  } else {
-    showAlert(alertEl, 'success', '✅ Payment confirmed! Welcome to Bamenda Connect.');
-    setTimeout(() => showPage('jobs'), 1500);
+  try {
+    // Show processing message
+    if (alertEl) {
+      alertEl.className = 'alert success';
+      alertEl.textContent = '⏳ Processing payment...';
+      alertEl.style.display = 'block';
+    }
+
+    // Get token from localStorage if authToken is not available
+    const token = authToken || localStorage.getItem('authToken');
+    if (!token) {
+      showAlert(alertEl, 'error', '❌ Authentication failed. Please log in again.');
+      return;
+    }
+
+    // Step 1: Initiate payment
+    const initiateRes = await fetch(`${API_BASE_URL}/payment/initiate/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        subscription_type: currentUser.role || 'employer'
+      })
+    });
+
+    const initiateData = await initiateRes.json();
+
+    if (!initiateRes.ok) {
+      showAlert(alertEl, 'error', '❌ ' + (initiateData.message || 'Failed to initiate payment.'));
+      return;
+    }
+
+    const transactionId = initiateData.transaction_id;
+
+    // Step 2: Confirm payment
+    const confirmRes = await fetch(`${API_BASE_URL}/payment/confirm/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        transaction_id: transactionId,
+        phone: phone,
+        method: method
+      })
+    });
+
+    const confirmData = await confirmRes.json();
+
+    if (!confirmRes.ok) {
+      showAlert(alertEl, 'error', '❌ ' + (confirmData.message || 'Payment confirmation failed. Please try again.'));
+      return;
+    }
+
+    // Success
+    currentUser.paid = true;
+    currentUser.payMethod = method;
+    currentUser.payPhone = phone;
+    currentUser.payRecipient = recipients[method];
+
+    // Update job posts remaining from backend response
+    if (confirmData.posts_remaining !== undefined) {
+      currentUser.job_posts_remaining = confirmData.posts_remaining;
+    } else if (currentUser.role === 'employer') {
+      currentUser.job_posts_remaining = 2; // Default for new employers
+    }
+
+    localStorage.setItem('tJobsUser', JSON.stringify(currentUser));
+
+    if (alertEl) {
+      alertEl.className = 'alert success';
+      alertEl.textContent = '✅ Payment confirmed! Redirecting...';
+      alertEl.style.display = 'block';
+    }
+
+    if (currentUser.role === 'employer') {
+      setTimeout(() => showPage('postjob'), 2000);
+    } else {
+      setTimeout(() => showPage('jobs'), 2000);
+    }
+  } catch (error) {
+    showAlert(alertEl, 'error', '❌ Connection error: ' + error.message);
   }
 };
 
@@ -6441,7 +6660,6 @@ function openSettingsModal() {
       setTimeout(() => updateSettingsUI(), 100);
     }
   } catch(e) {
-    console.error('Error opening settings:', e);
   }
 }
 
@@ -6452,7 +6670,6 @@ function closeSettingsModal() {
       modal.classList.remove('open');
     }
   } catch(e) {
-    console.error('Error closing settings:', e);
   }
 }
 
@@ -6491,7 +6708,6 @@ function updateSettingsUI() {
       btnFr.style.boxShadow = lang === 'fr' ? '0 12px 24px rgba(0,51,153,0.18)' : 'none';
     }
   } catch(e) {
-    console.error('Error updating settings UI:', e);
   }
 }
 
@@ -6508,3 +6724,111 @@ applyLanguage = function(lang) {
   _origApplyLanguage(lang);
   setTimeout(() => updateSettingsUI(), 50);
 };
+
+// ===== MOBILE SEARCH SYNC =====
+function filterJobsMobile() {
+  const q = (document.getElementById('jobSearchMob').value || '').toLowerCase();
+  const cat = document.getElementById('catFilterMob').value;
+  const loc = document.getElementById('locFilterMob').value.toLowerCase();
+  const type = document.getElementById('typeFilterMob').value;
+  // Sync to desktop inputs too
+  if (document.getElementById('jobSearch')) document.getElementById('jobSearch').value = q;
+  if (document.getElementById('catFilter')) document.getElementById('catFilter').value = cat;
+  if (document.getElementById('locFilter')) document.getElementById('locFilter').value = loc;
+  if (document.getElementById('typeFilter')) document.getElementById('typeFilter').value = type;
+
+  const filtered = allJobs.filter(j => {
+    const matchQ = !q || j.title.toLowerCase().includes(q) || (j.company||'').toLowerCase().includes(q) || j.category.toLowerCase().includes(q);
+    const matchCat = !cat || j.category === cat;
+    const matchLoc = !loc || (j.location||'').toLowerCase().includes(loc);
+    const matchType = !type || j.type === type;
+    return matchQ && matchCat && matchLoc && matchType;
+  });
+  document.getElementById('jobCount').textContent = `Showing ${filtered.length} job${filtered.length !== 1 ? 's' : ''} across Bamenda`;
+  document.getElementById('allJobsGrid').innerHTML = filtered.map(renderJobCard).join('');
+}
+
+// ===== WELCOME MODAL FOR FIRST-TIME VISITORS =====
+// ===== WELCOME MODAL FOR FIRST-TIME VISITORS =====
+function showWelcomeModal() {
+  const modal = document.getElementById('welcomeModal');
+  if (!modal) {
+    return;
+  }
+
+  // Always show job seeker tips for visitors
+  const tip1 = document.getElementById('tipText1');
+  const tip2 = document.getElementById('tipText2');
+  const tip3 = document.getElementById('tipText3');
+
+  if (tip1) tip1.textContent = 'Browse thousands of jobs in your area';
+  if (tip2) tip2.textContent = 'Set job alerts to never miss an opportunity';
+  if (tip3) tip3.textContent = 'Connect directly with employers';
+
+  modal.classList.add('open');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWelcomeModal() {
+  const modal = document.getElementById('welcomeModal');
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.style.overflow = 'auto';
+  }
+  localStorage.setItem('welcomeShown', 'true');
+}
+
+// Show welcome modal on every page load for non-logged-in users
+window.addEventListener('load', function() {
+  if (!currentUser) {
+    setTimeout(() => showWelcomeModal(), 500);
+  }
+});
+
+// Also support keyboard shortcut to close
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeWelcomeModal();
+  }
+});
+
+// Close modal when clicking outside of it
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('welcomeModal');
+  if (modal && e.target === modal) {
+    closeWelcomeModal();
+  }
+});
+
+// ===== HIDE COOKIE BANNER AFTER LOGIN/REGISTER =====
+// Override doLogin to auto-accept cookies
+const _origDoLoginCookie = doLogin;
+doLogin = async function() {
+  await _origDoLoginCookie();
+  acceptCookies();
+};
+
+// Override doRegister to auto-accept cookies
+const _origDoRegisterCookie = doRegister;
+doRegister = async function() {
+  await _origDoRegisterCookie();
+  acceptCookies();
+};
+
+// Also hide on init if user is already logged in
+const _origInitAppCookie = initApp;
+initApp = async function() {
+  await _origInitAppCookie();
+  if (currentUser) {
+    acceptCookies();
+  }
+};
+
+// Close modal when clicking outside of it
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('welcomeModal');
+  if (modal && e.target === modal) {
+    closeWelcomeModal();
+  }
+});
