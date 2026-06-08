@@ -60,15 +60,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'tubahjobs.wsgi.application'
 
-import dj_database_url
+DATABASES import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='sqlite:///db.sqlite3'),
-        conn_max_age=600,
-        conn_health_checks=True,
+        default='sqlite:///db.sqlite3'
     )
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
