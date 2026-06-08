@@ -1,2 +1,2 @@
-web: gunicorn backend.tubahjobs.wsgi --log-file -
-release: python backend/manage.py migrate
+web: cd backend && gunicorn tubahjobs.wsgi --log-file -
+release: cd backend && python manage.py migrate
