@@ -5,8 +5,6 @@ import os
 import ssl
 from pathlib import Path
 from decouple import config
-impmort dj_database_url
-
 # Fix SSL certificate verification on Windows
 ssl._create_default_https_context = ssl._create_unverified_context
 
