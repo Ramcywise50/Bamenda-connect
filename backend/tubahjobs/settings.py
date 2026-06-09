@@ -130,4 +130,7 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://bamenda-connect-production.up.railway.app',
+    'https://*.up.railway.app',
+]
