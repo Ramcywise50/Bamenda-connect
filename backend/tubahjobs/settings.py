@@ -134,3 +134,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://bamenda-connect-production.up.railway.app',
     'https://*.up.railway.app',
 ]
+ALLOWED_HOSTS = [
+    'bamenda-connect-production.up.railway.app',
+    'localhost',
+    '127.0.0.1',
+]
